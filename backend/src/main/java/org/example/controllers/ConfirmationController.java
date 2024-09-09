@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 import org.example.models.User;
+import org.example.models.UserAuthInfo;
 import org.example.repositories.UserRepository;
 import org.example.service.EmailService;
 import org.springframework.http.HttpStatus;
@@ -42,11 +43,11 @@ public class ConfirmationController {
             String cookieValue = UUID.randomUUID().toString();
             user.setCookie(cookieValue);
 
-            UserAuthInfo userAuthInfo = new UserAuthInfo();
-            userAuthInfo.setIp(emailService.getIp());
-            userAuthInfo.setUserAgent(emailService.getUserAgent());
-            userAuthInfo.setUser(user);
-            user.setUserAuthInfo(userAuthInfo);
+            // UserAuthInfo userAuthInfo = new UserAuthInfo();
+            // userAuthInfo.setIp(emailService.getIp());
+            // userAuthInfo.setUserAgent(emailService.getUserAgent());
+            // userAuthInfo.setUser(user);
+            // user.setUserAuthInfo(userAuthInfo);
             
             userRepository.save(user);
             return ResponseEntity.ok().body(cookieValue);
