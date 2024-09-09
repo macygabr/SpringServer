@@ -146,7 +146,7 @@ function Header({ auth, setAuth }) {
                         variant="h5"
                         noWrap
                         component="a"
-                        href="#app-bar-with-responsive-menu"
+                        href="/home"
                         sx={{
                             mr: 2,
                             display: { xs: 'flex', md: 'none' },
