@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 
 import org.example.repositories.UserRepository;
 import org.example.models.User;
+import org.example.models.UserAuthInfo;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,11 @@ public class SignInController {
             User user = users.get();
             String cookieValue = UUID.randomUUID().toString();
             user.setCookie(cookieValue);
+            UserAuthInfo userAuthInfo = new UserAuthInfo();
+            userAuthInfo.setIp(request.getRemoteAddr());
+            userAuthInfo.setUserAgent(request.getHeader("User-Agent"));
+            userAuthInfo.setUser(user);
+            user.setUserAuthInfo(userAuthInfo);
             userRepository.save(user);
             return ResponseEntity.ok().body(cookieValue);
         } else {

@@ -39,5 +39,4 @@ hibernate.cfg.xml
 .idea
 /my-app/node_modules/*
 application.properties
-resources/
 node_modules/
