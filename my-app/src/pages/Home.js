@@ -55,7 +55,7 @@ function Home() {
                         </List>
                     </>
                 ) : (
-                    <Typography variant="h6">Please sign in to view users.</Typography>
+                    <Typography variant="h6">Please sign in.</Typography>
                 )}
             </Box>
         </Box>
