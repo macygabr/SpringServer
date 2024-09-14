@@ -5,12 +5,10 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import java.util.UUID;
-// import javax.inject.Singleton;
 import lombok.Data;
 
 @Data
 @Service
-// @Singleton
 public class EmailService {
 
     private String firstName;
@@ -30,9 +28,9 @@ public class EmailService {
         SimpleMailMessage message = new SimpleMailMessage();
 
         token = UUID.randomUUID().toString();
-        String confirmationUrl = "http://37.194.168.90:3000/api/confirm?token=" + token;
+        String confirmationUrl = "http://37.194.168.90:3000/authentication/confirm?token=" + token;
         subject = "Email Confirmation";
-        body = "Hello " + firstName + " " + lastName + " \n" + "Please click the following link to confirm your email: \n" + confirmationUrl;
+        body = "Hello, " + firstName + " " + lastName + " \n" + "Please click the following link to confirm your email: \n" + confirmationUrl;
         message.setTo(email);
         message.setSubject(subject);
         message.setText(body);

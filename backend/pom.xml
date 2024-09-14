@@ -33,6 +33,14 @@
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
+        <!-- AWS Java SDK For Amazon S3 для хранения данных -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>1.12.771</version>
+        </dependency>
+
+
         <!-- Spring Boot Web Starter для безопасного хранения данных -->
         <!-- <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -86,6 +94,28 @@
             <artifactId>javax.inject</artifactId>
             <version>1</version>
             <scope>compile</scope>
+        </dependency>
+
+        
+        
+        <!-- JUnit 5 -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+    
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+    
+        <!-- Spring Boot Test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
