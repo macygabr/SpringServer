@@ -3,11 +3,11 @@ package org.example.controllers;
 import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.example.service.AuthenticationService;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.Cookie;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,32 +16,30 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.example.repositories.UserRepository;
 import org.example.models.User;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.util.Enumeration;
-
 @RestController
 @RequestMapping("/myAccount")
 public class AccountController implements HandlerInterceptor {
     private final UserRepository userRepository;
-    
+    private final AuthenticationService authenticationService;
+
     @Autowired
-    public AccountController(UserRepository userRepository) {
+    public AccountController(UserRepository userRepository, AuthenticationService authenticationService) {
         this.userRepository = userRepository;
+        this.authenticationService = authenticationService;
     }
 
     @PostMapping("/getInfo")
     public ResponseEntity<?> MyAccount(HttpServletRequest request) {
         String cookieValue = (String) request.getAttribute("cookieValue");
         Optional<User> user = userRepository.findByCookie(cookieValue);
-        return ResponseEntity.ok(user.get());
+        return ResponseEntity.ok(user.orElse(null));
     }
 
     @DeleteMapping("/deleteAccount")
     public ResponseEntity<?> deleteAccount(HttpServletRequest request) {
         String cookieValue = (String) request.getAttribute("cookieValue");
         Optional<User> user = userRepository.findByCookie(cookieValue);
-        userRepository.delete(user.get());
+        user.ifPresent(userRepository::delete);
         return ResponseEntity.ok("Account successfully deleted");
     }
 
@@ -49,38 +47,25 @@ public class AccountController implements HandlerInterceptor {
     public ResponseEntity<?> LogOut(HttpServletRequest request) {
         String cookieValue = (String) request.getAttribute("cookieValue");
         Optional<User> users = userRepository.findByCookie(cookieValue);
-        
-        User user = users.get();
-        user.setCookie(null);
-        userRepository.save(user);
+
+        if(users.isPresent()){
+            User user = users.get().setCookie(null);
+            userRepository.save(user);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid cookies");
+        }
         return ResponseEntity.ok().body("Logout success");
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        Cookie[] cookies = request.getCookies();
-        String cookieValue = null;
-
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("macygabr")) {
-                    cookieValue = cookie.getValue();
-                }
-            }
-        }
-        if (cookieValue == null) {
+        if(authenticationService.checkAuthentication(request)){
+            request.setAttribute("cookieValue", authenticationService.getCookieValue());
+            return true;
+        } else {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Invalid cookies");
             return false;
         }
-
-        Optional<User> user = userRepository.findByCookie(cookieValue);
-        if (user.isEmpty()) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Invalid cookies");
-            return false;
-        }
-        request.setAttribute("cookieValue", cookieValue);
-        return true;
     }
 }
