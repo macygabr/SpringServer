@@ -1,37 +1,43 @@
 package org.example.controllers;
 
-import org.example.models.User;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.example.repositories.UserRepository;
+import org.example.service.AuthenticationService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@WebMvcTest(AccountController.class)
 public class AccountControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
+    @Mock
     private UserRepository userRepository;
-
-    @Test
-    public void testGetAccount() throws Exception {
-        
+    @Mock
+    private AuthenticationService authenticationService;
+    @Mock
+    private HttpServletRequest request;
+    @Mock
+    private HttpServletResponse response;
+    private AccountController accountController;
+    @BeforeEach
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
+        accountController = new AccountController(userRepository, authenticationService);
     }
 
     @Test
-    public void testDeleteAccount() throws Exception {
-        
-    }
+    public void testPreHandle_ValidAuthentication() throws Exception {
 
-    @Test
-    public void testUpdateAccount() throws Exception {
-        
+        when(authenticationService.checkAuthentication(request)).thenReturn(true);
+        when(authenticationService.getCookieValue()).thenReturn("testCookieValue");
+
+        boolean result = accountController.preHandle(request, response, new Object());
+        assertTrue(result);
+
+        verify(request).setAttribute("cookieValue", "testCookieValue");
+        verify(response, never()).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
 }

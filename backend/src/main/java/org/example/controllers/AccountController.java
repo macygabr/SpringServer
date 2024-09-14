@@ -29,7 +29,7 @@ public class AccountController implements HandlerInterceptor {
     }
 
     @PostMapping("/getInfo")
-    public ResponseEntity<?> MyAccount(HttpServletRequest request) {
+    public ResponseEntity<?> getInfo(HttpServletRequest request) {
         String cookieValue = (String) request.getAttribute("cookieValue");
         Optional<User> user = userRepository.findByCookie(cookieValue);
         return ResponseEntity.ok(user.orElse(null));
@@ -49,7 +49,8 @@ public class AccountController implements HandlerInterceptor {
         Optional<User> users = userRepository.findByCookie(cookieValue);
 
         if(users.isPresent()){
-            User user = users.get().setCookie(null);
+            User user = users.get();
+            user.setCookie(null);
             userRepository.save(user);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid cookies");
