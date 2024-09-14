@@ -1,9 +1,10 @@
 package org.example.controllers;
 
+import java.util.Optional;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import java.util.Optional;
 import org.example.models.UserAuthInfo;
 import org.example.service.EmailService;
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.Cookie;
 
 import org.example.repositories.UserRepository;
 import org.example.models.User;
@@ -27,7 +27,6 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/authentication")
 public class AuthenticationController {
-    
     private final UserRepository userRepository;
     private final EmailService emailService;
 
@@ -38,11 +37,12 @@ public class AuthenticationController {
     }
 
     @PostMapping("/signUp")
-    public ResponseEntity<?> SignUp(@RequestBody SignUpRequest signUpRequest) {        
+    public ResponseEntity<?> SignUp(@RequestBody SignUpRequest signUpRequest) {
+
         if(userRepository.findByEmail(signUpRequest.getEmail()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
         }
-        
+
         emailService.setFirstName(signUpRequest.getFirstName());
         emailService.setLastName(signUpRequest.getLastName());
         emailService.setEmail(signUpRequest.getEmail());
@@ -94,10 +94,10 @@ public class AuthenticationController {
             user.setLastName(emailService.getLastName());
             user.setEmail(emailService.getEmail());
             user.setPass(emailService.getPassword());
-            
+
             String cookieValue = UUID.randomUUID().toString();
             user.setCookie(cookieValue);
-            
+
             userRepository.save(user);
             return ResponseEntity.ok().body(cookieValue);
         } catch (Exception e) {
@@ -105,13 +105,6 @@ public class AuthenticationController {
         }
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class SignInRequest {
-        private String email;
-        private String password;
-    }
 
     @Data
     @NoArgsConstructor
@@ -119,6 +112,14 @@ public class AuthenticationController {
     public static class SignUpRequest {
         private String firstName;
         private String lastName;
+        private String email;
+        private String password;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SignInRequest {
         private String email;
         private String password;
     }

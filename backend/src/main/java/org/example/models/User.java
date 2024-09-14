@@ -27,4 +27,5 @@ public class User {
     @JoinColumn(name = "user_auth_info_id")
     @JsonIgnore 
     private UserAuthInfo userAuthInfo;
+
 }

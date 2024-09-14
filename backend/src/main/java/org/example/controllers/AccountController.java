@@ -2,34 +2,24 @@ package org.example.controllers;
 
 import java.util.Optional;
 
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Cookie;
 
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.beans.factory.annotation.Autowired;
+
+
 import org.example.repositories.UserRepository;
 import org.example.models.User;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/myAccount")
-public class AccountController {
-    
+public class AccountController implements HandlerInterceptor {
     private final UserRepository userRepository;
-
     @Autowired
     public AccountController(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -47,7 +37,7 @@ public class AccountController {
 
         Optional<User> user = userRepository.findByCookie(cookieValue);
 
-        if (cookieValue == null || !user.isPresent()) {
+        if (cookieValue == null || user.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid cookies");
         }
 
@@ -72,7 +62,7 @@ public class AccountController {
 
         Optional<User> user = userRepository.findByCookie(cookieValue);
 
-        if (!user.isPresent()) {
+        if (user.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid cookies");
         }
 
@@ -93,12 +83,41 @@ public class AccountController {
 
         Optional<User> users = userRepository.findByCookie(cookieValue);
          if (users.isPresent()) {
-                User user = users.get();
-                user.setCookie(null);
-                userRepository.save(user);
-                return ResponseEntity.ok().body("Logout success");
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not found user");
+             User user = users.get();
+             user.setCookie(null);
+             userRepository.save(user);
+             return ResponseEntity.ok().body("Logout success");
+         } else {
+             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not found user");
+         }
+    }
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        Cookie[] cookies = request.getCookies();
+        String cookieValue = null;
+        System.out.println("\033[32m" + "Test!!!" + "\033[0m");
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("macygabr")) {
+                    cookieValue = cookie.getValue();
+                }
             }
         }
+
+        if (cookieValue == null) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid cookies");
+            return false;
+        }
+
+        Optional<User> user = userRepository.findByCookie(cookieValue);
+        if (user.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid user");
+            return false;
+        }
+
+        return true;
+    }
 }
