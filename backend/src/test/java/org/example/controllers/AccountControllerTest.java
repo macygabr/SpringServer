@@ -32,12 +32,12 @@ public class AccountControllerTest {
     public void testPreHandle_ValidAuthentication() throws Exception {
 
         when(authenticationService.checkAuthentication(request)).thenReturn(true);
-        when(authenticationService.getCookieValue()).thenReturn("testCookieValue");
+        when(authenticationService.getCookie()).thenReturn("testCookieValue");
 
         boolean result = accountController.preHandle(request, response, new Object());
         assertTrue(result);
 
-        verify(request).setAttribute("cookieValue", "testCookieValue");
+        verify(request).setAttribute("cookie", "testCookieValue");
         verify(response, never()).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     }
 }

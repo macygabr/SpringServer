@@ -15,7 +15,7 @@ import java.util.Optional;
 @Service
 public class AuthenticationService {
     private final UserRepository userRepository;
-    private String cookieValue;
+    private String cookie;
 
     @Autowired
     public AuthenticationService(UserRepository userRepository) {
@@ -26,18 +26,21 @@ public class AuthenticationService {
         Cookie[] cookies = request.getCookies();
 
         if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("macygabr")) {
-                    cookieValue = cookie.getValue();
+            System.out.println("\033[31m All cookies \033[0m");
+            for (Cookie cookieTest : cookies) {
+                System.out.println("\033[31m" + cookieTest + "\033[0m");
+                if (cookieTest.getName().equals("custom-auth-token")) {
+                    cookie = cookieTest.getValue();
                 }
             }
         }
 
-        if (cookieValue == null) {
+        if (cookie == null) {
             return false;
         }
 
-        Optional<User> user = userRepository.findByCookie(cookieValue);
+        Optional<User> user = userRepository.findByCookie(cookie);
+        
         return user.isPresent();
     }
 }

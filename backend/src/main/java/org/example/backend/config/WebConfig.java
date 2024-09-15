@@ -12,11 +12,6 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    private String[] allowedOrigins = {
-        "http://37.194.168.90:3000",
-        "http://10.54.202.32",
-        "http://127.0.0.1:3000"     
-    };
 
     private final AccountController accountInterceptor;
 
@@ -28,15 +23,14 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(accountInterceptor)
-                .addPathPatterns("/myAccount/**");
+                .addPathPatterns("/account/**");
     }
-
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")  // Настраивает CORS для всех путей
-                .allowedOrigins(allowedOrigins)  // Разрешает доступ только с указанного домена
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")  // Разрешает только указанные HTTP-методы
-                .allowedHeaders("*")  // Разрешает любые заголовки
-                .allowCredentials(true);  // Разрешает отправку credentials, например, куки
+        registry.addMapping("/**")  // Разрешить CORS для всех путей
+                .allowedOrigins("http://37.194.168.90:3000")  // Разрешает доступ только с указанного домена
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")  // Разрешить эти методы
+                .allowedHeaders("*")  // Разрешить любые заголовки
+                .allowCredentials(true);  // Разрешить отправку кросс-доменных куки
     }
 }

@@ -29,7 +29,7 @@ public class HomeController {
         this.userRepository = userRepository;
     }
 
-    @PostMapping("/home")
+    @GetMapping("/home")
     public ResponseEntity<?> home(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         String cookieValue = null;

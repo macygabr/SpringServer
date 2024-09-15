@@ -2,9 +2,11 @@ package org.example.models;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
+@ToString(exclude = "userAuthInfo")
 @Entity
 @Table(name = "users")
 public class User {
@@ -25,7 +27,18 @@ public class User {
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_auth_info_id")
-    @JsonIgnore 
+    @JsonIgnore
     private UserAuthInfo userAuthInfo;
 
+    public void update(User updatedUser) {
+        if(updatedUser.getFirstName() != null) {
+            this.firstName = updatedUser.getFirstName();
+        }
+        if(updatedUser.getLastName() != null) {
+            this.lastName = updatedUser.getLastName();
+        }
+        if(updatedUser.getAvatar() != null) {
+            this.avatar = updatedUser.getAvatar();
+        }
+    }
 }

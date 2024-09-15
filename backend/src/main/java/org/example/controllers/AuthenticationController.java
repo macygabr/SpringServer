@@ -1,6 +1,9 @@
 package org.example.controllers;
 
 import java.util.Optional;
+import java.util.Map;
+import java.util.HashMap;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 
+
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.example.repositories.UserRepository;
@@ -25,7 +29,7 @@ import org.example.models.User;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/authentication")
+@RequestMapping("/auth")
 public class AuthenticationController {
     private final UserRepository userRepository;
     private final EmailService emailService;
@@ -36,9 +40,9 @@ public class AuthenticationController {
         this.userRepository = userRepository;
     }
 
-    @PostMapping("/signUp")
+    @PostMapping("/signup")
     public ResponseEntity<?> SignUp(@RequestBody SignUpRequest signUpRequest) {
-
+        System.out.println("\033[32m signUpRequest: " + signUpRequest.toString() + "\033[0m");
         if(userRepository.findByEmail(signUpRequest.getEmail()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
         }
@@ -52,16 +56,17 @@ public class AuthenticationController {
         return ResponseEntity.ok().body("Success");
     }
 
-    @PostMapping("/signIn")
+    @PostMapping("/signin")
     public ResponseEntity<?> signIn(@RequestBody SignInRequest signInRequest, HttpServletRequest request) {
         String email = signInRequest.getEmail();
         String password = signInRequest.getPassword();
+        System.out.println("\033[33m signInRequest: " + email + "\033[0m");
         Optional<User> users = userRepository.findByEmail(email);
 
         if (users.isPresent() && users.get().getPass().equals(password)) {
             User user = users.get();
-            String cookieValue = UUID.randomUUID().toString();
-            user.setCookie(cookieValue);
+            Map<String, String> response = generateToken();
+            user.setCookie(response.get("token_value"));
 
             UserAuthInfo userAuthInfo = user.getUserAuthInfo();
             if (userAuthInfo == null) {
@@ -75,18 +80,21 @@ public class AuthenticationController {
 
             userRepository.save(user);
 
-            return ResponseEntity.ok().body(cookieValue);
+            return ResponseEntity.ok().body(response);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not found user");
         }
     }
 
-
-    @GetMapping("/confirm")
-    public ResponseEntity<?> confirmEmail(@RequestParam("token") String token) {
+    @PostMapping("/confirm")
+    public ResponseEntity<?> confirmEmail(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        System.out.println("\033[34mconfirm(token): " + token + "\033[0m");
         if(!token.equals(emailService.getToken())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         }
+
+        System.out.println("\033[34mconfirm(status): succses\033[0m");
 
         try {
             User user = new User();
@@ -95,14 +103,21 @@ public class AuthenticationController {
             user.setEmail(emailService.getEmail());
             user.setPass(emailService.getPassword());
 
-            String cookieValue = UUID.randomUUID().toString();
-            user.setCookie(cookieValue);
+            Map<String, String> response = generateToken();
+            user.setCookie(response.get("token_value"));
 
             userRepository.save(user);
-            return ResponseEntity.ok().body(cookieValue);
+            return ResponseEntity.ok().body(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not found user");
         }
+    }
+
+    private Map<String, String> generateToken() {
+         Map<String, String> response = new HashMap<>();
+            response.put("token_value", UUID.randomUUID().toString());
+            response.put("token_name", "custom-auth-token");
+        return response;
     }
 
 

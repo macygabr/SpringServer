@@ -2,6 +2,7 @@ package org.example.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -66,5 +67,13 @@ public class EmailServiceTest {
         assertThrows(IllegalArgumentException.class, () -> {
             emailService.setLastName("test test");
         });
+    }
+
+    @Test
+    public void testCorrect() throws Exception {
+        assertDoesNotThrow(() -> emailService.setEmail("example@gmail.com"));
+        assertDoesNotThrow(() -> emailService.setPassword("elrgher"));
+        assertDoesNotThrow(() -> emailService.setFirstName("цкпку"));
+        assertDoesNotThrow(() -> emailService.setLastName("erger.,m3245"));
     }
 }

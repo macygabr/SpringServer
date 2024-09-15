@@ -27,7 +27,7 @@ public class EmailService {
     public void sendConfirmationEmail() {
         SimpleMailMessage message = new SimpleMailMessage();
         token = UUID.randomUUID().toString();
-        String confirmationUrl = "http://37.194.168.90:3000/authentication/confirm?token=" + token;
+        String confirmationUrl = "http://37.194.168.90:3000/auth/confirm?token=" + token;
         subject = "Email Confirmation";
         body = "Hello, " + firstName + " " + lastName + " \n" + "Please click the following link to confirm your email: \n" + confirmationUrl;
         message.setTo(email);
@@ -59,7 +59,7 @@ public class EmailService {
             throw new IllegalArgumentException("All fields are required");
         }
 
-        if(!str.matches("^[a-zA-Z0-9_+&*-]+$")) {
+        if (!str.matches("^[\\p{L}\\p{N}_+&*-@.]+$")) {
             throw new IllegalArgumentException("Invalid fields");
         }
     }
