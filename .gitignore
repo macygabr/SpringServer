@@ -40,3 +40,4 @@ hibernate.cfg.xml
 /my-app/node_modules/*
 application.properties
 node_modules/
+/material-kit-react
