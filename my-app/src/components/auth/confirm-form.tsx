@@ -8,16 +8,21 @@ import { useRouter } from 'next/navigation';
 export function ConfirmForm(): React.JSX.Element {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
-
+  const router = useRouter(); 
 
   React.useEffect(() => {
     const confirmToken = async () => {
+      if (!token) {
+        console.error('Token is missing');
+        return;
+      }
+
       try {
         const { error } = await authClient.signUpToken(token);
         if (error) {
           console.error(error);
         } else {
-          router.refresh();
+          router.refresh(); 
         }
       } catch (err) {
         console.error(err);
@@ -25,7 +30,7 @@ export function ConfirmForm(): React.JSX.Element {
     };
 
     confirmToken();
-  }, [token]);
+  }, [token, router]); 
 
   return (
     <div>

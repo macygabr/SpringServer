@@ -1,4 +1,4 @@
-"use client"; 
+'use client';
 
 import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
@@ -11,7 +11,6 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import { authClient } from '@/lib/auth/client';
-
 
 export interface User {
   firstName: string;
@@ -32,12 +31,19 @@ export function AccountInfo(): React.JSX.Element {
   useEffect(() => {
     async function fetchUser() {
       const { data, error } = await authClient.getUser();
+
       if (error) {
         setError(error);
         setLoading(false);
         return;
       }
-      setUser(data);
+
+      if (data) {
+        setUser(data as User);
+      } else {
+        setUser(null);
+      }
+
       setLoading(false);
     }
 

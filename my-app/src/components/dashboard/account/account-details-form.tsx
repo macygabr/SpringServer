@@ -14,17 +14,7 @@ import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import { authClient } from '@/lib/auth/client';
-
-export interface User {
-  firstName: string;
-  lastName: string;
-  email: string;
-  avatar: string;
-  jobTitle: string;
-  country: string;
-  city: string;
-  timezone: string;
-};
+import { User } from '@/types/user';
 
 const states = [
   { value: 'alabama', label: 'Alabama' },
@@ -36,6 +26,7 @@ const states = [
 export function AccountDetailsForm(): React.JSX.Element {
   const [user, setUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<User>({
+    id: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -51,19 +42,38 @@ export function AccountDetailsForm(): React.JSX.Element {
   useEffect(() => {
     async function fetchUser() {
       const { data, error } = await authClient.getUser();
+      
       if (error) {
         setError(error);
         setLoading(false);
         return;
       }
-      setUser(data);
-      setFormData(data);
+  
+      if (data && typeof data === 'object') {
+        const userData: User = {
+          id: data.id,
+          firstName: data.firstName || '',
+          lastName: data.lastName || '',
+          email: data.email || '',
+          avatar: data.avatar || '',
+          jobTitle: data.jobTitle || '',
+          country: data.country || '',
+          city: data.city || '',
+          timezone: data.timezone || '',
+        };
+
+        setUser(userData);
+        setFormData(userData);
+      } else {
+        setUser(null);
+      }
+  
       setLoading(false);
     }
-
+  
     fetchUser();
   }, []);
-
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
