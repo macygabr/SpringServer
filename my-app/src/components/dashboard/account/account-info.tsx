@@ -27,6 +27,8 @@ export function AccountInfo(): React.JSX.Element {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchUser() {
@@ -49,6 +51,29 @@ export function AccountInfo(): React.JSX.Element {
 
     fetchUser();
   }, []);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setSelectedFile(event.target.files[0]);
+    }
+  };
+
+  const handleFileUpload = async () => {
+    if (!selectedFile) {
+      return;
+    }
+
+    const result = await authClient.uploadAvatar(selectedFile);
+    if (result.error) {
+      setUploadError(result.error);
+    } else {
+      setUploadError(null);
+      const { data, error } = await authClient.getUser();
+      if (data) {
+        setUser(data as User);
+      }
+    }
+  };
 
   if (loading) {
     return <Typography>Loading...</Typography>;
@@ -82,9 +107,26 @@ export function AccountInfo(): React.JSX.Element {
       </CardContent>
       <Divider />
       <CardActions>
-        <Button fullWidth variant="text">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+          id="file-input"
+        />
+        <label htmlFor="file-input">
+          <Button fullWidth variant="text" component="span">
+            Select picture
+          </Button>
+        </label>
+        <Button fullWidth variant="text" onClick={handleFileUpload}>
           Upload picture
         </Button>
+        {uploadError && (
+          <Typography color="error" variant="body2">
+            {uploadError}
+          </Typography>
+        )}
       </CardActions>
     </Card>
   );

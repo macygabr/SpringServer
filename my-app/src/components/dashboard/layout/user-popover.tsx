@@ -24,29 +24,44 @@ export interface UserPopoverProps {
 }
 
 export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): React.JSX.Element {
-  const { checkSession } = useUser();
+  const [user, setUser] = React.useState<User | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
 
+  const { checkSession } = useUser();
   const router = useRouter();
+
+  React.useEffect(() => {
+    async function fetchUser() {
+      const { data, error } = await authClient.getUser();
+      
+      if (error) {
+        setError(error);
+        return;
+      }
+
+      setUser(data || null);
+    }
+
+    fetchUser();
+  }, []);
 
   const handleSignOut = React.useCallback(async (): Promise<void> => {
     try {
       const { error } = await authClient.signOut();
-
       if (error) {
         logger.error('Sign out error', error);
         return;
       }
-
-      // Refresh the auth state
       await checkSession?.();
-
-      // UserProvider, for this case, will not refresh the router and we need to do it manually
       router.refresh();
-      // After refresh, AuthGuard will handle the redirect
     } catch (err) {
       logger.error('Sign out error', err);
     }
   }, [checkSession, router]);
+
+  if (error) {
+    return <Typography color="error">Error: {error}</Typography>;
+  }
 
   return (
     <Popover
@@ -57,9 +72,9 @@ export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): Reac
       slotProps={{ paper: { sx: { width: '240px' } } }}
     >
       <Box sx={{ p: '16px 20px ' }}>
-        <Typography variant="subtitle1">Sofia Rivers</Typography>
+        <Typography variant="subtitle1">{user?.firstName} {user?.lastName}</Typography>
         <Typography color="text.secondary" variant="body2">
-          sofia.rivers@devias.io
+          {user?.email}
         </Typography>
       </Box>
       <Divider />

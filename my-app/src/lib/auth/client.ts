@@ -82,13 +82,26 @@ class AuthClient {
 
   async getUser(): Promise<{ data?: User | null; error?: string }> {
     try{
-      const response = await axiosInstance.get('account/getInfo', { withCredentials: true });
+      const response = await axiosInstance.get('account/getinfo', { withCredentials: true });
       if (!response.data) {
         return { data: null };
       }
       return { data: response.data };
     } catch (error) {
       return { data: null};
+    }
+  }
+
+  async uploadAvatar(file: File): Promise<{ error?: string; url?: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const response = await axiosInstance.post('account/savefile', formData, { withCredentials: true });
+      const [status, fileUrl] = response.data;
+      return { url: fileUrl };
+    } catch (error) {
+      return { error: 'Error uploading avatar' };
     }
   }
 
