@@ -1,4 +1,5 @@
-interface User {
+interface BasicUser {
+
   avatar?: string;
   firstName: string;
   lastName: string;
@@ -11,3 +12,7 @@ interface OptionalUserFields {
   city?: string;
   timezone?: string;
 }
+
+export type User = BasicUser & OptionalUserFields & {
+  [key: string]: unknown;
+};
