@@ -41,3 +41,4 @@ hibernate.cfg.xml
 application.properties
 node_modules/
 /material-kit-react
+.next
