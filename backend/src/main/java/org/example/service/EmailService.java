@@ -17,23 +17,17 @@ public class EmailService {
     private String password;
 
     private String token;
-    private String subject;
-    private String body;
-    private String fromEmail = "tursumatovnur@gmail.com";
 
     @Autowired
     private JavaMailSender mailSender;
 
     public void sendConfirmationEmail() {
+        token = generateToken();
         SimpleMailMessage message = new SimpleMailMessage();
-        token = UUID.randomUUID().toString();
-        String confirmationUrl = "http://37.194.168.90:3000/auth/confirm?token=" + token;
-        subject = "Email Confirmation";
-        body = "Hello, " + firstName + " " + lastName + " \n" + "Please click the following link to confirm your email: \n" + confirmationUrl;
         message.setTo(email);
-        message.setSubject(subject);
-        message.setText(body);
-        message.setFrom(fromEmail);
+        message.setSubject(getSubject());
+        message.setText(getBody());
+        message.setFrom(getFromEmail());
         mailSender.send(message);
     }
 
@@ -62,5 +56,25 @@ public class EmailService {
         if (!str.matches("^[\\p{L}\\p{N}_+&*-@.]+$")) {
             throw new IllegalArgumentException("Invalid fields");
         }
+    }
+
+    private String generateToken() {
+        return UUID.randomUUID().toString();
+    }
+
+    private String getFromEmail() {
+        return "tursumatovnur@gmail.com";
+    }
+
+    private String getSubject() {
+        return "Confirm your email";
+    }
+
+    private String getBody() {
+        String confirmationUrl = "http://37.194.168.90:3000/auth/confirm?token=" + token;
+        return "Hello " + firstName + " " + lastName + ",\n\n" +
+                "Please confirm your email by clicking on the link below:\n\n" +
+                confirmationUrl + "\n\n" +
+                "Thank you!";
     }
 }

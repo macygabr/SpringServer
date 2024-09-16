@@ -4,7 +4,6 @@ import java.util.Optional;
 import java.util.Map;
 import java.util.HashMap;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,9 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 
-
 import jakarta.servlet.http.HttpServletRequest;
-
 import org.example.repositories.UserRepository;
 import org.example.models.User;
 
@@ -60,7 +57,7 @@ public class AuthenticationController {
     public ResponseEntity<?> signIn(@RequestBody SignInRequest signInRequest, HttpServletRequest request) {
         String email = signInRequest.getEmail();
         String password = signInRequest.getPassword();
-        System.out.println("\033[33m signInRequest: " + email + "\033[0m");
+        System.out.println("\033[33m signInRequest(email): " + email + "\033[0m");
         Optional<User> users = userRepository.findByEmail(email);
 
         if (users.isPresent() && users.get().getPass().equals(password)) {
@@ -79,7 +76,6 @@ public class AuthenticationController {
             user.setUserAuthInfo(userAuthInfo);
 
             userRepository.save(user);
-
             return ResponseEntity.ok().body(response);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not found user");
@@ -94,6 +90,7 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         }
 
+        emailService.setToken(null);
         System.out.println("\033[34mconfirm(status): succses\033[0m");
 
         try {
@@ -119,7 +116,6 @@ public class AuthenticationController {
             response.put("token_name", "custom-auth-token");
         return response;
     }
-
 
     @Data
     @NoArgsConstructor

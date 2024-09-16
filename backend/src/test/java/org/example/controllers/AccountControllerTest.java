@@ -21,11 +21,12 @@ public class AccountControllerTest {
     private HttpServletRequest request;
     @Mock
     private HttpServletResponse response;
+
     private AccountController accountController;
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
-        accountController = new AccountController(userRepository, authenticationService);
+        accountController = new AccountController(userRepository, authenticationService, null);
     }
 
     @Test

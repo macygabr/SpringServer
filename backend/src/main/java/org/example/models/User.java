@@ -6,7 +6,7 @@ import lombok.ToString;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
-@ToString(exclude = "userAuthInfo")
+@ToString(exclude = {"userAuthInfo", "optionalUserFields"})
 @Entity
 @Table(name = "users")
 public class User {
@@ -29,6 +29,11 @@ public class User {
     @JoinColumn(name = "user_auth_info_id")
     @JsonIgnore
     private UserAuthInfo userAuthInfo;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "optional_user_fields")
+    @JsonIgnore
+    private OptionalUserFields optionalUserFields;
 
     public void update(User updatedUser) {
         if(updatedUser.getFirstName() != null) {

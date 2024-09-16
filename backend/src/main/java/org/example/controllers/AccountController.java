@@ -11,9 +11,10 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.web.multipart.MultipartFile;
 
 import org.example.repositories.UserRepository;
+import org.example.service.S3Service;
 import org.example.models.User;
 
 @RestController
@@ -21,14 +22,16 @@ import org.example.models.User;
 public class AccountController implements HandlerInterceptor {
     private final UserRepository userRepository;
     private final AuthenticationService authenticationService;
+    private final S3Service s3Service;
 
     @Autowired
-    public AccountController(UserRepository userRepository, AuthenticationService authenticationService) {
+    public AccountController(UserRepository userRepository, AuthenticationService authenticationService, S3Service s3Service) {
         this.userRepository = userRepository;
         this.authenticationService = authenticationService;
+        this.s3Service = s3Service;
     }
 
-    @GetMapping("/getInfo")
+    @GetMapping("/getinfo")
     public ResponseEntity<?> getInfo(HttpServletRequest request) {
         String cookie = (String) request.getAttribute("cookie");
         System.out.println("\033[32m getInfo(cookie): " + cookie + "\033[0m");
@@ -37,7 +40,7 @@ public class AccountController implements HandlerInterceptor {
         return ResponseEntity.ok(user.orElse(null));
     }
 
-    @DeleteMapping("/deleteAccount")
+    @DeleteMapping("/delete")
     public ResponseEntity<?> deleteAccount(HttpServletRequest request) {
         String cookie = (String) request.getAttribute("cookie");
         Optional<User> user = userRepository.findByCookie(cookie);
@@ -68,6 +71,22 @@ public class AccountController implements HandlerInterceptor {
         user.update(updatedUser);
         userRepository.save(user);
         return ResponseEntity.ok().body("Update success");
+    }
+
+    @PostMapping("/savefile")
+    public ResponseEntity<?> saveFile(HttpServletRequest request, @RequestParam("file") MultipartFile file) {
+        Optional<User> users = userRepository.findByCookie((String) request.getAttribute("cookie"));
+
+        System.out.println("\033[36m savefile(name): " + file.getOriginalFilename() + "\033[0m");
+        String url = s3Service.uploadFile(file);
+        System.out.println("\033[36m savefile(url): " + url + "\033[0m");
+
+        users.ifPresent(user -> user.setAvatar(url));
+        users.ifPresent(userRepository::save);
+
+        ResponseEntity<?> response = ResponseEntity.ok(url);
+        System.out.println("\033[36m savefile(response): " + response + "\033[0m");
+        return response;
     }
 
     @Override
