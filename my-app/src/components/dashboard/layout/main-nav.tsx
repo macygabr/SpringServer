@@ -11,6 +11,12 @@ import { Bell as BellIcon } from '@phosphor-icons/react/dist/ssr/Bell';
 import { List as ListIcon } from '@phosphor-icons/react/dist/ssr/List';
 import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
 import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
+import Typography from '@mui/material/Typography';
+import { useEffect, useState } from 'react';
+import { authClient } from '@/lib/auth/client';
+import { User } from '@/types/user';
+import { useRouter } from 'next/navigation'; 
+import { paths } from '@/paths';
 
 import { usePopover } from '@/hooks/use-popover';
 
@@ -21,6 +27,25 @@ export function MainNav(): React.JSX.Element {
   const [openNav, setOpenNav] = React.useState<boolean>(false);
 
   const userPopover = usePopover<HTMLDivElement>();
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [user, setUser] = React.useState<User | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    async function fetchUser() {
+      const { data, error } = await authClient.getUser();
+  
+      if (error || !data) {
+        setUploadError('Failed to fetch user data');
+        router.push(paths.errors.notFound); 
+        return;
+      }
+  
+      setUser(data as User);
+    }
+  
+    fetchUser();
+  }, [router]);
 
   return (
     <React.Fragment>
@@ -70,12 +95,17 @@ export function MainNav(): React.JSX.Element {
             <Avatar
               onClick={userPopover.handleOpen}
               ref={userPopover.anchorRef}
-              src="/assets/avatar.png"
+              src={user?.avatar || ''}
               sx={{ cursor: 'pointer' }}
             />
           </Stack>
         </Stack>
       </Box>
+      {uploadError && (
+        <Typography color="error" variant="body2" sx={{ mt: 2, textAlign: 'center' }}>
+          {uploadError}
+        </Typography>
+      )}
       <UserPopover anchorEl={userPopover.anchorRef.current} onClose={userPopover.handleClose} open={userPopover.open} />
       <MobileNav
         onClose={() => {
