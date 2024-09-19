@@ -24,6 +24,7 @@ export function GuestGuard({ children }: GuestGuardProps): React.JSX.Element | n
 
     if (error) {
       setIsChecking(false);
+      router.push(paths.errors.notFound);
       return;
     }
 

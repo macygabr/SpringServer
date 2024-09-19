@@ -2,15 +2,15 @@
 
 import type { User } from '@/types/user';
 import axios from 'axios';
-
-function generateToken(): string {
-  const arr = new Uint8Array(12);
-  window.crypto.getRandomValues(arr);
-  return Array.from(arr, (v) => v.toString(16).padStart(2, '0')).join('');
-}
+import { Event } from '@/types/event';
 
 const axiosInstance = axios.create({
   baseURL: 'http://37.194.168.90:2000',
+});
+
+axiosInstance.interceptors.request.use(request => {
+  console.log('Starting Request: ', request);
+  return request;
 });
 
 export interface SignUpParams {
@@ -57,11 +57,11 @@ class AuthClient {
 
     try {
       const response = await axiosInstance.post('auth/signin', { email, password });
-      const { token_value } = response.data;
+      const { token } = response.data;
       const {token_name} = response.data;
-
-      if (token_value && token_name) {
-        document.cookie = `${token_name}=${token_value}; path=/; max-age=3600`;
+      console.log(token_name, token)
+      if (token && token_name) {
+        localStorage.setItem(token_name, token);
       }
       return {};
     } catch (error) {
@@ -81,16 +81,39 @@ class AuthClient {
   }
 
   async getUser(): Promise<{ data?: User | null; error?: string }> {
-    try{
-      const response = await axiosInstance.get('account/getinfo', { withCredentials: true });
-      if (!response.data) {
+    try {
+      const token = localStorage.getItem('custom-auth-token');
+        console.log("token = " + token)
+        const response = await axiosInstance.get('account/getinfo', {
+            headers: {
+                Authorization: `${token}`
+            }
+        });
+        if (!response.data) {
+            return { data: null };
+        }
+        return { data: response.data };
+    } catch (error) {
         return { data: null };
-      }
+    }
+}
+
+  async createEvent(eventData: Event): Promise<{ data?: any; error?: string }> {
+    try {
+      const token = localStorage.getItem('custom-auth-token');
+      const response = await axiosInstance.post('events/create', eventData, {
+        headers: {
+          Authorization: `${token}`,
+        },
+      });
+      
       return { data: response.data };
     } catch (error) {
-      return { data: null};
+      console.error('Error creating event:', error);
+      return { error: 'Failed to create event' };
     }
   }
+
 
   async uploadAvatar(file: File): Promise<{ error?: string; url?: string }> {
     const formData = new FormData();
@@ -108,6 +131,7 @@ class AuthClient {
   async signOut(): Promise<{ error?: string }> {
     try{
       const response = await axiosInstance.get('account/logout', { withCredentials: true });
+      document.cookie = 'custom-auth-token=; path=/; max-age=0;';
       return {};
     } catch (error) {
       return { error: 'Error signing out' };

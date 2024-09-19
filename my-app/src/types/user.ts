@@ -1,5 +1,4 @@
-interface BasicUser {
-
+interface BasicUser { 
   avatar?: string;
   firstName: string;
   lastName: string;

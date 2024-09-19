@@ -5,7 +5,6 @@ import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
-import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -15,6 +14,8 @@ import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import { authClient } from '@/lib/auth/client';
 import { User } from '@/types/user';
+import { useRouter } from 'next/navigation'; 
+import { paths } from '@/paths';
 
 const states = [
   { value: 'alabama', label: 'Alabama' },
@@ -38,14 +39,15 @@ export function AccountDetailsForm(): React.JSX.Element {
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter(); 
 
   useEffect(() => {
     async function fetchUser() {
       const { data, error } = await authClient.getUser();
       
       if (error) {
-        setError(error);
         setLoading(false);
+        router.push(paths.errors.notFound);
         return;
       }
   
@@ -66,6 +68,7 @@ export function AccountDetailsForm(): React.JSX.Element {
         setFormData(userData);
       } else {
         setUser(null);
+        router.push(paths.errors.notFound);
       }
   
       setLoading(false);
@@ -84,6 +87,18 @@ export function AccountDetailsForm(): React.JSX.Element {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log(formData);
+    // try {
+    //   // Assuming there's an updateUser method in authClient for updating user data
+    //   const { error } = await authClient.updateUser(formData);
+    //   if (error) {
+    //     setError('Failed to update user details');
+    //   } else {
+    //     // Handle successful update (e.g., show a success message or redirect)
+    //     router.push(paths.dashboard.overview);
+    //   }
+    // } catch (err) {
+    //   setError('An unexpected error occurred');
+    // }
   };
 
   if (loading) {

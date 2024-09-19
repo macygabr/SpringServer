@@ -24,6 +24,7 @@ export function AuthGuard({ children }: AuthGuardProps): React.JSX.Element | nul
 
     if (error) {
       setIsChecking(false);
+      router.push(paths.errors.notFound);
       return;
     }
 
