@@ -17,13 +17,6 @@ import { User } from '@/types/user';
 import { useRouter } from 'next/navigation'; 
 import { paths } from '@/paths';
 
-const states = [
-  { value: 'alabama', label: 'Alabama' },
-  { value: 'new-york', label: 'New York' },
-  { value: 'san-francisco', label: 'San Francisco' },
-  { value: 'los-angeles', label: 'Los Angeles' },
-] as const;
-
 export function AccountDetailsForm(): React.JSX.Element {
   const [user, setUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<User>({
@@ -120,33 +113,33 @@ export function AccountDetailsForm(): React.JSX.Element {
       <Card>
         <CardContent>
           <Grid container spacing={3}>
-            <Grid md={6} xs={12}>
+            <Grid md={5} xs={ 0}>
               <FormControl fullWidth required>
-                <InputLabel>First name</InputLabel>
-                <OutlinedInput name="firstName" value={formData.firstName} onChange={handleChange} />
+                <InputLabel>Имя</InputLabel>
+                <OutlinedInput name="firstName" label="Имя" value={formData.firstName} onChange={handleChange} />
               </FormControl>
             </Grid>
-            <Grid md={6} xs={12}>
+            <Grid md={5} xs={ 0}>
               <FormControl fullWidth required>
-                <InputLabel>Last name</InputLabel>
-                <OutlinedInput name="lastName" value={formData.lastName} onChange={handleChange} />
+                <InputLabel>Фамилия</InputLabel>
+                <OutlinedInput name="lastName" label="Фамилия" value={formData.lastName} onChange={handleChange} />
               </FormControl>
             </Grid>
-            <Grid md={6} xs={12}>
+            <Grid md={5} xs={10}>
               <FormControl fullWidth required>
-                <InputLabel>Email</InputLabel>
-                <OutlinedInput name="email" value={formData.email} onChange={handleChange} />
+                <InputLabel>Почта</InputLabel>
+                <OutlinedInput name="email" label="Почта" value={formData.email} onChange={handleChange} />
               </FormControl>
             </Grid>
-            <Grid md={6} xs={12}>
+            <Grid md={5} xs={10}>
               <FormControl fullWidth>
-                <InputLabel>City</InputLabel>
+                <InputLabel>Город</InputLabel>
                 <OutlinedInput name="city" value={formData.city} onChange={handleChange} />
               </FormControl>
             </Grid>
-            <Grid md={6} xs={12}>
+            <Grid md={5} xs={10}>
               <FormControl fullWidth>
-                <InputLabel>Country</InputLabel>
+                <InputLabel>Страна</InputLabel>
                 <OutlinedInput name="country" value={formData.country} onChange={handleChange} />
               </FormControl>
             </Grid>
@@ -154,7 +147,7 @@ export function AccountDetailsForm(): React.JSX.Element {
         </CardContent>
         <Divider />
         <CardActions>
-          <Button variant="contained" type="submit">Save details</Button>
+          <Button variant="contained" type="submit">Сохранить</Button>
         </CardActions>
       </Card>
     </form>

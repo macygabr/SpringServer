@@ -135,7 +135,7 @@ export function AccountInfo(): React.JSX.Element {
               }
             }}
           >
-            Загрузите Аватар
+            Загрузить Аватар
           </Button>
         </label>
 

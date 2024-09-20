@@ -5,8 +5,14 @@ import Grid from '@mui/material/Unstable_Grid2';
 import Button from '@mui/material/Button';
 import { authClient } from '@/lib/auth/client';
 import { Event } from '@/types/event'; 
+import { config } from '@/config';
 
 export default function Page(): React.JSX.Element {
+
+  React.useEffect(() => {
+    document.title = `Events | Dashboard | ${config.site.name}`;
+  }, []);
+
   const CreateEvent = async () => {
     const eventData: Event = {
       tag: 1,

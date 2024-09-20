@@ -26,26 +26,27 @@ function noop(): void {
   // do nothing
 }
 
-export interface Customer {
+export interface Event {
   id: string;
   description: string;
   end_time: string;
   start: string;
   title: string;
-  name: string;
-  avatar: string;
-  email:string;
+  user: {
+    name: string;
+    avatar: string;
+  };
   createdAt: Date;
 }
 
 interface EventsTableProps {
   count?: number;
   page?: number;
-  rows?: Customer[];
+  rows?: Event[];
   rowsPerPage?: number;
 }
 
-export function CustomersTable({
+export function EventsTable({
   count = 0,
   rows = [],
   page = 0,
@@ -110,11 +111,11 @@ export function CustomersTable({
                 />
               </TableCell>
               <TableCell>ID</TableCell>
-              <TableCell>Title</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Start</TableCell>
-              <TableCell>End Time</TableCell>
-              <TableCell>User Name</TableCell>
+              <TableCell>Название</TableCell>
+              <TableCell>Описание</TableCell>
+              <TableCell>Начало</TableCell>
+              <TableCell>Конец</TableCell>
+              <TableCell>Имя</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

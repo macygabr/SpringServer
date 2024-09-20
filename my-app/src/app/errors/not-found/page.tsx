@@ -36,7 +36,7 @@ export default function NotFound(): React.JSX.Element {
           startIcon={<ArrowLeftIcon fontSize="var(--icon-fontSize-md)" />}
           variant="contained"
         >
-          Go back to home
+          Вернуться на домашнюю страницу
         </Button>
       </Stack>
     </Box>
