@@ -40,3 +40,5 @@ hibernate.cfg.xml
 /my-app/node_modules/*
 application.properties
 node_modules/
+credentials.json
+tokens/
