@@ -1,7 +1,7 @@
 package org.example.service;
 
 import lombok.Getter;
-import org.example.models.User;
+import org.example.models.user.*;
 import org.example.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import java.util.Optional;
 @Service
 public class AuthenticationService {
     private final UserRepository userRepository;
-    private String cookie;
+    private String token;
 
     @Autowired
     public AuthenticationService(UserRepository userRepository) {
@@ -23,23 +23,18 @@ public class AuthenticationService {
     }
 
     public Boolean checkAuthentication(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
+        System.out.println("\033[30m AuthenticationService(status): start\033[0m");
 
-        if (cookies != null) {
-            System.out.println("\033[31m All cookies \033[0m");
-            for (Cookie cookieTest : cookies) {
-                System.out.println("\033[31m" + cookieTest + "\033[0m");
-                if (cookieTest.getName().equals("custom-auth-token")) {
-                    cookie = cookieTest.getValue();
-                }
-            }
-        }
-
-        if (cookie == null) {
+        String token = request.getHeader("Authorization");
+        
+        System.out.println("\033[30m AuthenticationService(check token): " + token + "\033[0m");
+        if (token == null || token.isEmpty()) {
+            System.out.println("\033[30m AuthenticationService(status): fail\033[0m");
             return false;
         }
-
-        Optional<User> user = userRepository.findByCookie(cookie);
+        System.out.println("\033[30m AuthenticationService(status): search user...\033[0m");
+        Optional<User> user = userRepository.findByToken(token);
+        System.out.println("\033[30m AuthenticationService(status): succses\033[0m");
         
         return user.isPresent();
     }

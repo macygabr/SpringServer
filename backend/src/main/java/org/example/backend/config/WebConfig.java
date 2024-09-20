@@ -14,7 +14,7 @@ public class WebConfig implements WebMvcConfigurer {
 
 
     private final AccountController accountInterceptor;
-
+    
     @Autowired
     public WebConfig(AccountController accountInterceptor) {
         this.accountInterceptor = accountInterceptor;
@@ -23,14 +23,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(accountInterceptor)
+                .addPathPatterns("/events/**")
                 .addPathPatterns("/account/**");
-    }
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")  // Разрешить CORS для всех путей
-                .allowedOrigins("http://37.194.168.90:3000")  // Разрешает доступ только с указанного домена
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")  // Разрешить эти методы
-                .allowedHeaders("*")  // Разрешить любые заголовки
-                .allowCredentials(true);  // Разрешить отправку кросс-доменных куки
     }
 }

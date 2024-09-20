@@ -7,21 +7,15 @@ import java.util.HashMap;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.models.UserAuthInfo;
+import org.example.models.user.*;
 import org.example.service.EmailService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.example.repositories.UserRepository;
-import org.example.models.User;
 
 import java.util.UUID;
 
@@ -39,7 +33,7 @@ public class AuthenticationController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> SignUp(@RequestBody SignUpRequest signUpRequest) {
-        System.out.println("\033[32m signUpRequest: " + signUpRequest.toString() + "\033[0m");
+        System.out.println("\033[33m SignUp: " + "start"+ "\033[0m");
         if(userRepository.findByEmail(signUpRequest.getEmail()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
         }
@@ -63,19 +57,13 @@ public class AuthenticationController {
         if (users.isPresent() && users.get().getPass().equals(password)) {
             User user = users.get();
             Map<String, String> response = generateToken();
-            user.setCookie(response.get("token_value"));
-
-            UserAuthInfo userAuthInfo = user.getUserAuthInfo();
-            if (userAuthInfo == null) {
-                userAuthInfo = new UserAuthInfo();
-                userAuthInfo.setUser(user);
+            if (user.getToken() != null && !user.getToken().isEmpty()) {
+                response.put("token", user.getToken());
             }
-
-            userAuthInfo.setIp(request.getRemoteAddr());
-            userAuthInfo.setUserAgent(request.getHeader("User-Agent"));
-            user.setUserAuthInfo(userAuthInfo);
+            user.setToken(response.get("token"));
 
             userRepository.save(user);
+            System.out.println("\033[33m signInRequest(status): succses\033[0m");
             return ResponseEntity.ok().body(response);
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not found user");
@@ -101,7 +89,7 @@ public class AuthenticationController {
             user.setPass(emailService.getPassword());
 
             Map<String, String> response = generateToken();
-            user.setCookie(response.get("token_value"));
+            user.setToken(response.get("token"));
 
             userRepository.save(user);
             return ResponseEntity.ok().body(response);
@@ -112,7 +100,7 @@ public class AuthenticationController {
 
     private Map<String, String> generateToken() {
          Map<String, String> response = new HashMap<>();
-            response.put("token_value", UUID.randomUUID().toString());
+            response.put("token", UUID.randomUUID().toString());
             response.put("token_name", "custom-auth-token");
         return response;
     }
