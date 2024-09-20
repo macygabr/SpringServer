@@ -3,6 +3,7 @@ interface BasicUser {
   firstName: string;
   lastName: string;
   email: string;
+  status: string;
 }
 
 interface OptionalUserFields {

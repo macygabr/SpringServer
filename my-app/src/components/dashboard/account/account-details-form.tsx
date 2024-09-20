@@ -35,7 +35,8 @@ export function AccountDetailsForm(): React.JSX.Element {
     jobTitle: '',
     country: '',
     city: '',
-    timezone: ''
+    timezone: '',
+    status: ''
   });
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +63,7 @@ export function AccountDetailsForm(): React.JSX.Element {
           country: data.country || '',
           city: data.city || '',
           timezone: data.timezone || '',
+          status: data.status || ''
         };
 
         setUser(userData);

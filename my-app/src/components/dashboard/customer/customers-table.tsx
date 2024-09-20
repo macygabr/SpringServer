@@ -14,9 +14,13 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
+import { authClient } from '@/lib/auth/client';
 import dayjs from 'dayjs';
 
+import { paths } from '@/paths';
 import { useSelection } from '@/hooks/use-selection';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 
 function noop(): void {
   // do nothing
@@ -24,15 +28,17 @@ function noop(): void {
 
 export interface Customer {
   id: string;
-  avatar: string;
+  description: string;
+  end_time: string;
+  start: string;
+  title: string;
   name: string;
-  email: string;
-  address: { city: string; state: string; country: string; street: string };
-  phone: string;
+  avatar: string;
+  email:string;
   createdAt: Date;
 }
 
-interface CustomersTableProps {
+interface EventsTableProps {
   count?: number;
   page?: number;
   rows?: Customer[];
@@ -44,15 +50,45 @@ export function CustomersTable({
   rows = [],
   page = 0,
   rowsPerPage = 0,
-}: CustomersTableProps): React.JSX.Element {
+}: EventsTableProps): React.JSX.Element {
   const rowIds = React.useMemo(() => {
-    return rows.map((customer) => customer.id);
+    return rows.map((event) => event.id);
   }, [rows]);
 
   const { selectAll, deselectAll, selectOne, deselectOne, selected } = useSelection(rowIds);
+  const [user, setEvent] = useState<Event | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const router = useRouter();
 
   const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < rows.length;
   const selectedAll = rows.length > 0 && selected?.size === rows.length;
+
+  useEffect(() => {
+    async function fetchEvent() {
+      setLoading(true);
+      const { data, error } = await authClient.getMyEvent();
+
+      if (error) {
+        setUploadError('Failed to fetch events');
+        setLoading(false);
+        router.push(paths.errors.notFound);
+        return;
+      }
+
+      if (data) {
+        setEvent(data as Event);
+      } else {
+        setEvent(null);
+        setUploadError('Events data is invalid');
+        router.push(paths.errors.notFound);
+      }
+
+      setLoading(false);
+    }
+
+    fetchEvent();
+  }, [router]);
 
   return (
     <Card>
@@ -73,11 +109,12 @@ export function CustomersTable({
                   }}
                 />
               </TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Location</TableCell>
-              <TableCell>Phone</TableCell>
-              <TableCell>Signed Up</TableCell>
+              <TableCell>ID</TableCell>
+              <TableCell>Title</TableCell>
+              <TableCell>Description</TableCell>
+              <TableCell>Start</TableCell>
+              <TableCell>End Time</TableCell>
+              <TableCell>User Name</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -98,18 +135,17 @@ export function CustomersTable({
                       }}
                     />
                   </TableCell>
+                  <TableCell>{row.id}</TableCell>
+                  <TableCell>{row.title}</TableCell>
+                  <TableCell>{row.description}</TableCell>
+                  <TableCell>{dayjs(row.start).format('MMM D, YYYY h:mm A')}</TableCell>
+                  <TableCell>{dayjs(row.end_time).format('MMM D, YYYY h:mm A')}</TableCell>
                   <TableCell>
                     <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
-                      <Avatar src={row.avatar} />
-                      <Typography variant="subtitle2">{row.name}</Typography>
+                      {/* <Avatar src={row.user.avatar} />
+                      <Typography variant="subtitle2">{row.user.name}</Typography> */}
                     </Stack>
                   </TableCell>
-                  <TableCell>{row.email}</TableCell>
-                  <TableCell>
-                    {row.address.city}, {row.address.state}, {row.address.country}
-                  </TableCell>
-                  <TableCell>{row.phone}</TableCell>
-                  <TableCell>{dayjs(row.createdAt).format('MMM D, YYYY')}</TableCell>
                 </TableRow>
               );
             })}

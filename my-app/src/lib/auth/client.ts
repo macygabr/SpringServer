@@ -38,7 +38,11 @@ class AuthClient {
     const { email, password, firstName, lastName } = params;
 
     try {
-      const response = await axiosInstance.post('auth/signup', { email, password, firstName, lastName });
+      const response = await axiosInstance.post('auth/signup', { email, password, firstName, lastName },{
+        headers: {
+            Authorization: `${localStorage.getItem('custom-auth-token')}`
+        }
+    });
       return {};
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -56,7 +60,11 @@ class AuthClient {
     const { email, password } = params;
 
     try {
-      const response = await axiosInstance.post('auth/signin', { email, password });
+      const response = await axiosInstance.post('auth/signin', { email, password,
+        headers: {
+            Authorization: `${localStorage.getItem('custom-auth-token')}`
+        }
+    });
       const { token } = response.data;
       const {token_name} = response.data;
       console.log(token_name, token)
@@ -100,10 +108,9 @@ class AuthClient {
 
   async createEvent(eventData: Event): Promise<{ data?: any; error?: string }> {
     try {
-      const token = localStorage.getItem('custom-auth-token');
       const response = await axiosInstance.post('events/create', eventData, {
         headers: {
-          Authorization: `${token}`,
+          Authorization: `${localStorage.getItem('custom-auth-token')}`,
         },
       });
       
@@ -114,6 +121,36 @@ class AuthClient {
     }
   }
 
+  async getMyEvent(): Promise<{ data?: any; error?: string }> {
+    try {
+        const response = await axiosInstance.get('events/getAll', {
+            headers: {
+                Authorization: `${localStorage.getItem('custom-auth-token')}`,
+            },
+        });
+
+        return { data: response.data };
+    } catch (error) {
+        console.error('Error fetching event:', error);
+        return { error: 'Failed to fetch event' };
+    }
+}
+
+  async deleteEvent(event: { eventId: string }): Promise<{ data?: any; error?: string }> {
+    try {
+        const response = await axiosInstance.post('events/delete', event, {
+                headers: {
+                    Authorization: `${localStorage.getItem('custom-auth-token')}`,
+                },
+            }
+        );
+
+        return { data: response.data };
+    } catch (error) {
+        console.error('Error deleting event:', error);
+        return { error: 'Failed to delete event' };
+    }
+  }
 
   async uploadAvatar(file: File): Promise<{ error?: string; url?: string }> {
     const formData = new FormData();
@@ -147,14 +184,19 @@ class AuthClient {
     }
   }
   
-  async signUpToken(token: string): Promise<{ error?: string }> {
+  async signUpToken(check_token: string): Promise<{ error?: string }> {
     try{
-      const response = await axiosInstance.post('auth/confirm', { token });
-      const { token_value } = response.data;
-      const {token_name} = response.data;
+      const response = await axiosInstance.post('auth/confirm', check_token ,{
+        headers: {
+          Authorization: `${localStorage.getItem('custom-auth-token')}`
+        },
+      });
       
-      if (token_value && token_name) {
-        document.cookie = `${token_name}=${token_value}; path=/; max-age=3600`;
+      const { token } = response.data;
+      const {token_name} = response.data;
+      console.log(token_name, token)
+      if (token && token_name) {
+        localStorage.setItem(token_name, token);
       }
       return {};
     } catch (error) {

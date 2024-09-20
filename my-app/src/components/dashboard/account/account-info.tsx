@@ -112,27 +112,40 @@ export function AccountInfo(): React.JSX.Element {
       </CardContent>
       <Divider />
       <CardActions>
-      <input
+        <input
           type="file"
           accept="image/*"
-          onChange={async (event) => {
+          onChange={(event) => {
             handleFileChange(event);
-            await handleFileUpload();
           }}
           style={{ display: 'none' }}
           id="file-input"
         />
-          <label htmlFor="file-input">
-            <Button fullWidth variant="text" component="span">
-              Select Picture
-            </Button>
-          </label>
+        <label htmlFor="file-input">
+          <Button
+            fullWidth
+            variant="contained"
+            component="span"
+            onClick={async () => {
+              const fileInput = document.getElementById('file-input') as HTMLInputElement;
+              if (fileInput && fileInput.files?.length) {
+                await handleFileUpload();
+              } else {
+                setUploadError('No file selected');
+              }
+            }}
+          >
+            Загрузите Аватар
+          </Button>
+        </label>
+
         {uploadError && (
           <Typography color="error" variant="body2">
             {uploadError}
           </Typography>
         )}
       </CardActions>
+
     </Card>
   );
 }
