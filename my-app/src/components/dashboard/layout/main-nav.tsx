@@ -9,6 +9,7 @@ import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import { Bell as BellIcon } from '@phosphor-icons/react/dist/ssr/Bell';
 import { List as ListIcon } from '@phosphor-icons/react/dist/ssr/List';
+import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
 import Typography from '@mui/material/Typography';
 import { useEffect, useState } from 'react';
 import { authClient } from '@/lib/auth/client';
@@ -71,6 +72,11 @@ export function MainNav(): React.JSX.Element {
             >
               <ListIcon />
             </IconButton>
+            <Tooltip title="Search">
+              <IconButton>
+                <MagnifyingGlassIcon />
+              </IconButton>
+            </Tooltip>
           </Stack>
           <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
             <Tooltip title="Notifications">

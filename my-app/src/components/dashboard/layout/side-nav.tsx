@@ -124,7 +124,7 @@ function renderNavItems({ items = [], pathname }: { items?: NavItemConfig[]; pat
   }, []);
 
   return (
-    <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0 }}>
+    <Stack component="ul" spacing={1} sx={{ listStyle: 'none', m: 0, p: 0, fontSize: '16px' }}>
       {children}
     </Stack>
   );

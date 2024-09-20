@@ -84,7 +84,7 @@ export function MobileNav({ open, onClose }: MobileNavProps): React.JSX.Element 
         </Box> */}
       </Stack>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
-      <Box component="nav" sx={{ flex: '1 1 auto', p: '12px' }}>
+      <Box component="nav" sx={{ flex: '1 1 auto', p: '12px' }} >
         {renderNavItems({ pathname, items: navItems })}
       </Box>
       <Divider sx={{ borderColor: 'var(--mui-palette-neutral-700)' }} />
