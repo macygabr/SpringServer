@@ -118,9 +118,14 @@ class AuthClient {
   async uploadAvatar(file: File): Promise<{ error?: string; url?: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    
+    console.log("formData")
     try {
-      const response = await axiosInstance.post('account/savefile', formData, { withCredentials: true });
+      const response = await axiosInstance.post('account/savefile', formData, {
+        headers: {
+          Authorization: `${localStorage.getItem('custom-auth-token')}`
+        },
+      });
+
       const [status, fileUrl] = response.data;
       return { url: fileUrl };
     } catch (error) {
@@ -130,7 +135,11 @@ class AuthClient {
 
   async signOut(): Promise<{ error?: string }> {
     try{
-      const response = await axiosInstance.get('account/logout', { withCredentials: true });
+      const response = await axiosInstance.get('account/logout', { 
+        headers: {
+          Authorization: `${localStorage.getItem('custom-auth-token')}`
+        }
+       });
       document.cookie = 'custom-auth-token=; path=/; max-age=0;';
       return {};
     } catch (error) {
