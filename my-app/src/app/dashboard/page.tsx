@@ -10,8 +10,9 @@ export default function Page(): React.JSX.Element {
   const CreateEvent = async () => {
     const eventData: Event = {
       title: 'Новое событие',
+      description: 'Это описание нового события.',
       start: new Date().toISOString(),
-      end: new Date(new Date().getTime() + 60 * 60 * 1000).toISOString(), 
+      end: new Date(new Date().getTime() + 60 * 60 * 1000).toISOString(),
     };
 
     const { data, error } = await authClient.createEvent(eventData);
