@@ -138,7 +138,23 @@ class AuthClient {
     }
   }
 
-  //events/count (get)
+  async getEventsCount(): Promise<{ data?: User | null; error?: string }> {
+    try {
+      const token = localStorage.getItem('custom-auth-token');
+        console.log("token = " + token)
+        const response = await axiosInstance.get('events/count', {
+            headers: {
+                Authorization: `${token}`
+            }
+        });
+        if (!response.data) {
+            return { data: null };
+        }
+        return { data: response.data };
+    } catch (error) {
+        return { data: null };
+    }
+}
 
   async getMyEvent(): Promise<{ data?: any; error?: string }> {
     try {
@@ -156,7 +172,7 @@ class AuthClient {
     }
 }
 
-async deleteEvent(eventIds: { eventId: string[] }): Promise<{ data?: any; error?: string }> {
+async deleteEvent(eventIds: string[]): Promise<{ data?: any; error?: string }> {
   try {
     const response = await axiosInstance.post('events/delete', eventIds, {
       headers: {

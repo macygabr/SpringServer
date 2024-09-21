@@ -47,7 +47,7 @@ export function SubscribeForm(): React.JSX.Element {
       {error && (
         <Stack spacing={2}>
           <Alert severity="error">{error}</Alert>
-          <Button onClick={() => router.push('/')} variant="contained">Go to Home</Button>
+          <Button onClick={() => router.push('/')} variant="contained" sx={{ backgroundColor: '#1b3a69', '&:hover': { backgroundColor: '#0f1e3c' } }}>Go to Home</Button>
         </Stack>
       )}
     </div>

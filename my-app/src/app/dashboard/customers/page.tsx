@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { Trash as TrashIcon } from '@phosphor-icons/react/dist/ssr/Trash';
 import { EventsTable, CustomEvent } from '@/components/dashboard/customer/customers-table';
-import { useSelection } from '@/hooks/use-selection'; // Используем хук выделения
+import { useSelection } from '@/hooks/use-selection';
 import { Plus as PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import CreateEventModal from '@/components/dashboard/customer/CreateEventModal';
 import { authClient } from '@/lib/auth/client';
@@ -21,14 +21,16 @@ export default function Page(): React.JSX.Element {
   const [userId, setUserId] = useState<string>(''); 
   const [userStatus, setUserStatus] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentSelection, setCurrentSelection] = useState<Set<string>>(new Set());
+  
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
   const page = 0;
   const rowsPerPage = 5;
   const router = useRouter();
 
-  const rowIds = React.useMemo(() => events.map(event => event.id), [events]); // Мемоизация rowIds
-  const { selected, selectAll, deselectAll } = useSelection(rowIds); // Используем хук
+  const rowIds = React.useMemo(() => events.map(event => event.id), [events]);
+  const { selected } = useSelection(rowIds); 
 
   const staticTags = [
     { id: '8', name: 'Инвест-клуб' },
@@ -51,7 +53,6 @@ export default function Page(): React.JSX.Element {
         setLoading(false);
         return;
       }
-
       setEvents(data as CustomEvent[] || []); 
       setLoading(false);
     }
@@ -78,20 +79,32 @@ export default function Page(): React.JSX.Element {
   };
 
   const handleDeleteClick = async () => {
-    const selectedEventIds = Array.from(selected); // Преобразуем Set в массив
+    const selectedIds = Array.from(currentSelection); // Получаем выбранные id
+  
+    // Получаем соответствующие eventId
+    const selectedEventIds: string[] = selectedIds
+      .map(selectedId => {
+        const event = events.find(e => e.id === selectedId);
+        return event ? event.eventId : null; // Возвращаем eventId или null, если не найдено
+      })
+      .filter((eventId): eventId is string => eventId !== null); // Убираем null значения и указываем, что остаются только строки
+  
     if (selectedEventIds.length > 0) {
-      const { data, error } = await authClient.deleteEvent({ eventId: selectedEventIds });
+      // Отправляем массив строк с eventId
+      const { data, error } = await authClient.deleteEvent(selectedEventIds); 
       if (error) {
         console.error('Ошибка при удалении событий:', error);
       } else {
-        setEvents(prevEvents => prevEvents.filter(event => !selectedEventIds.includes(event.id)));
+        setEvents(prevEvents => prevEvents.filter(event => !selectedEventIds.includes(event.eventId))); // Фильтруем по eventId
         console.log('События успешно удалены:', data);
       }
     } else {
       console.log('Нет выбранных событий для удаления');
     }
   };
-
+  
+  
+  
   return (
     <Stack spacing={3}>
       <Stack direction="row" spacing={3}>
@@ -102,7 +115,11 @@ export default function Page(): React.JSX.Element {
               <Button 
                 color="inherit" 
                 startIcon={<TrashIcon fontSize="var(--icon-fontSize-md)" />} 
-                onClick={handleDeleteClick}
+                onClick={() => {
+                  setCurrentSelection(new Set(selected));
+                  console.log('Кнопка удаления нажата. Выбранные события:', selected);
+                  handleDeleteClick();
+                }}
               >
                 Удалить
               </Button>
@@ -128,6 +145,10 @@ export default function Page(): React.JSX.Element {
           page={page}
           rows={events}
           rowsPerPage={rowsPerPage}
+          onSelectionChange={(selected) => {
+            setCurrentSelection(selected);
+            console.log('Изменение выбора в родительском компоненте:', selected);
+          }}
         />
       )}
       {loading && <Typography>Загрузка...</Typography>}
@@ -137,7 +158,7 @@ export default function Page(): React.JSX.Element {
         onClose={closeModal}
         onEventCreated={handleEventCreated}
         userId={userId}
-        tag={staticTags} // Используем staticTags
+        tag={staticTags} 
       />
     </Stack>
   );

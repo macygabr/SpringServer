@@ -13,13 +13,14 @@ import FormGroup from '@mui/material/FormGroup';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Unstable_Grid2';
-import { authClient } from '@/lib/auth/client'; // Убедитесь, что это правильный путь импорта
+import { authClient } from '@/lib/auth/client';
 import { userTag } from '@/types/tags';
 import { useEffect, useState } from 'react';
 
 export function Notifications(): React.JSX.Element {
   const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
   const tags = [
     { id: '8', label: 'Инвест-клуб' },
@@ -37,6 +38,10 @@ export function Notifications(): React.JSX.Element {
       const { data, error } = await authClient.getUser();
       if (data) {
         setUserId(data.id);
+        if (data.tags && Array.isArray(data.tags)) {
+          const userTagIds = data.tags.map((tag: { id: string | number }) => String(tag.id));
+          setSelectedTags(userTagIds);
+        }
       }
     };
 
@@ -44,9 +49,9 @@ export function Notifications(): React.JSX.Element {
   }, []);
 
   const handleCheckboxChange = (tagId: string) => {
-    setSelectedTags((prev) => 
-      prev.includes(tagId) 
-        ? prev.filter((id) => id !== tagId) 
+    setSelectedTags((prev) =>
+      prev.includes(tagId)
+        ? prev.filter((id) => id !== tagId)
         : [...prev, tagId]
     );
   };
@@ -54,15 +59,16 @@ export function Notifications(): React.JSX.Element {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const eventData: userTag = {
-      tagId: selectedTags.map(id => parseInt(id, 10)), 
+      tagId: selectedTags.map(id => parseInt(id, 10)),
     };
-  
 
     const { data, error } = await authClient.saveTags(eventData);
     if (error) {
       console.error('Ошибка при сохранении тегов:', error);
+      setMessage('Ошибка при сохранении тегов.'); 
     } else {
       console.log('Теги успешно сохранены:', data);
+      setMessage('Теги успешно сохранены!'); 
     }
   };
 
@@ -93,7 +99,7 @@ export function Notifications(): React.JSX.Element {
                 </FormGroup>
               </Stack>
             </Grid>
-            
+
             {/* Вторая колонка */}
             <Grid md={4} sm={6} xs={12}>
               <Stack spacing={1} sx={{ marginTop: { xs: '0', md: '2.5rem' } }}>
@@ -114,6 +120,11 @@ export function Notifications(): React.JSX.Element {
               </Stack>
             </Grid>
           </Grid>
+          {message && (
+            <Typography variant="body1" sx={{ marginTop: 2, color: 'green' }}>
+              {message}
+            </Typography>
+          )}
         </CardContent>
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>

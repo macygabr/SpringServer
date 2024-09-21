@@ -76,31 +76,6 @@ export function EventsTable({
     }
   }, [selected, onSelectionChange]);
 
-  useEffect(() => {
-    async function fetchEvent() {
-      setLoading(true);
-      const { data, error } = await authClient.getMyEvent();
-
-      if (error) {
-        setUploadError('Failed to fetch events');
-        setLoading(false);
-        router.push(paths.errors.notFound);
-        return;
-      }
-
-      if (data) {
-        // Обработка данных
-      } else {
-        setUploadError('Events data is invalid');
-        router.push(paths.errors.notFound);
-      }
-
-      setLoading(false);
-    }
-
-    fetchEvent();
-  }, [router]);
-
   return (
     <Card>
       <Box sx={{ overflowX: 'auto' }}>
