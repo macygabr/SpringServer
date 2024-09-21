@@ -80,7 +80,7 @@ export function MainNav(): React.JSX.Element {
           </Stack>
           <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
             <Tooltip title="Notifications">
-              <Badge badgeContent={4} color="success" variant="dot">
+              <Badge>
                 <IconButton>
                   <BellIcon />
                 </IconButton>
@@ -110,3 +110,5 @@ export function MainNav(): React.JSX.Element {
     </React.Fragment>
   );
 }
+
+// 83 строка было: <Badge badgeContent={4} color="success" variant="dot">, стало: <Badge>

@@ -13,48 +13,111 @@ import FormGroup from '@mui/material/FormGroup';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Unstable_Grid2';
+import { authClient } from '@/lib/auth/client'; // Убедитесь, что это правильный путь импорта
+import { userTag } from '@/types/tags';
+import { useEffect, useState } from 'react';
 
 export function Notifications(): React.JSX.Element {
+  const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  const tags = [
+    { id: '8', label: 'Инвест-клуб' },
+    { id: '3', label: 'Маркетплейсы' },
+    { id: '7', label: 'Спорт-клуб' },
+    { id: '1', label: 'Читай-клуб' },
+    { id: '5', label: 'Благотворительность' },
+    { id: '2', label: 'Английский разговорный клуб' },
+    { id: '6', label: 'Производство' },
+    { id: '4', label: 'Родительский совет' },
+  ];
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data, error } = await authClient.getUser();
+      if (data) {
+        setUserId(data.id);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  const handleCheckboxChange = (tagId: string) => {
+    setSelectedTags((prev) => 
+      prev.includes(tagId) 
+        ? prev.filter((id) => id !== tagId) 
+        : [...prev, tagId]
+    );
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const eventData: userTag = {
+      tagId: selectedTags.map(id => parseInt(id, 10)), 
+    };
+  
+
+    const { data, error } = await authClient.saveTags(eventData);
+    if (error) {
+      console.error('Ошибка при сохранении тегов:', error);
+    } else {
+      console.log('Теги успешно сохранены:', data);
+    }
+  };
+
   return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-      }}
-    >
+    <form onSubmit={handleSubmit}>
       <Card>
         <CardHeader title="Выбор мероприятий" />
         <Divider />
         <CardContent>
-        <Grid container spacing={6} wrap="wrap">
-          {/* Первая колонка */}
-          <Grid md={4} sm={6} xs={12}>
-            <Stack spacing={1}>
-              <Typography variant="h6">Направления развития</Typography>
-              <FormGroup>
-                <FormControlLabel control={<Checkbox defaultChecked />} label="Инвест-клуб" />
-                <FormControlLabel control={<Checkbox />} label="Маркетплейсы" />
-                <FormControlLabel control={<Checkbox />} label="Спорт-клуб" />
-                <FormControlLabel control={<Checkbox />} label="Читай-клуб" />
-              </FormGroup>
-            </Stack>
+          <Grid container spacing={6} wrap="wrap">
+            {/* Первая колонка */}
+            <Grid md={4} sm={6} xs={12}>
+              <Stack spacing={1}>
+                <Typography variant="h6">Направления развития</Typography>
+                <FormGroup>
+                  {tags.slice(0, 4).map(tag => (
+                    <FormControlLabel
+                      key={tag.id}
+                      control={
+                        <Checkbox
+                          checked={selectedTags.includes(tag.id)}
+                          onChange={() => handleCheckboxChange(tag.id)}
+                        />
+                      }
+                      label={tag.label}
+                    />
+                  ))}
+                </FormGroup>
+              </Stack>
+            </Grid>
+            
+            {/* Вторая колонка */}
+            <Grid md={4} sm={6} xs={12}>
+              <Stack spacing={1} sx={{ marginTop: { xs: '0', md: '2.5rem' } }}>
+                <FormGroup>
+                  {tags.slice(4).map(tag => (
+                    <FormControlLabel
+                      key={tag.id}
+                      control={
+                        <Checkbox
+                          checked={selectedTags.includes(tag.id)}
+                          onChange={() => handleCheckboxChange(tag.id)}
+                        />
+                      }
+                      label={tag.label}
+                    />
+                  ))}
+                </FormGroup>
+              </Stack>
+            </Grid>
           </Grid>
-          
-          {/* Вторая колонка */}
-          <Grid md={4} sm={6} xs={12}>
-            <Stack spacing={1} sx={{ marginTop: { xs: '0', md: '2.5rem' } }}> {/* Настройка отступа сверху для выравнивания */}
-              <FormGroup>
-                <FormControlLabel control={<Checkbox />} label="Благотворительность" />
-                <FormControlLabel control={<Checkbox />} label="Английский разговорный клуб" />
-                <FormControlLabel control={<Checkbox />} label="Производство" />
-                <FormControlLabel control={<Checkbox />} label="Родительский совет" />
-              </FormGroup>
-            </Stack>
-          </Grid>
-        </Grid>
         </CardContent>
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
-          <Button variant="contained">Сохранить</Button>
+          <Button variant="contained" type="submit" sx={{ backgroundColor: '#1b3a69', '&:hover': { backgroundColor: '#0f1e3c' } }}>Сохранить</Button>
         </CardActions>
       </Card>
     </form>

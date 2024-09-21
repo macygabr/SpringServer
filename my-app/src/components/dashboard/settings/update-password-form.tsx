@@ -36,7 +36,7 @@ export function UpdatePasswordForm(): React.JSX.Element {
         </CardContent>
         <Divider />
         <CardActions sx={{ justifyContent: 'flex-end' }}>
-          <Button variant="contained">Сменить</Button>
+          <Button variant="contained" sx={{ backgroundColor: '#1b3a69', '&:hover': { backgroundColor: '#0f1e3c' } }}>Сменить</Button>
         </CardActions>
       </Card>
     </form>

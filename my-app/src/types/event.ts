@@ -1,9 +1,10 @@
 export interface Event {
-    tag: number;
+    tag: string;
     title: string;
     description: string;
     location_address: string;
     start: string;
     end: string;
+    userId: string;
   }
   

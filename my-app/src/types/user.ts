@@ -1,4 +1,5 @@
 interface BasicUser { 
+  id: string;
   avatar?: string;
   firstName: string;
   lastName: string;

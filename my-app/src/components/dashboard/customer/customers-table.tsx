@@ -15,35 +15,43 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { authClient } from '@/lib/auth/client';
-import dayjs from 'dayjs';
-
 import { paths } from '@/paths';
 import { useSelection } from '@/hooks/use-selection';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 function noop(): void {
   // do nothing
 }
 
-export interface Event {
+export interface Tag {
   id: string;
-  description: string;
-  end_time: string;
-  start: string;
+  name: string;
+}
+
+export interface CustomEvent { 
+  id: string;
+  eventId: string;
   title: string;
-  user: {
-    name: string;
-    avatar: string;
+  description: string;
+  start: string;
+  end: string;
+  organizer: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      avatar: string;
   };
+  tag: Tag;
   createdAt: Date;
 }
 
 interface EventsTableProps {
   count?: number;
   page?: number;
-  rows?: Event[];
+  rows?: CustomEvent[];
   rowsPerPage?: number;
+  onSelectionChange?: (selected: Set<string>) => void; 
 }
 
 export function EventsTable({
@@ -51,19 +59,22 @@ export function EventsTable({
   rows = [],
   page = 0,
   rowsPerPage = 0,
+  onSelectionChange, 
 }: EventsTableProps): React.JSX.Element {
-  const rowIds = React.useMemo(() => {
-    return rows.map((event) => event.id);
-  }, [rows]);
-
+  const rowIds = React.useMemo(() => rows.map(event => event.id), [rows]);
   const { selectAll, deselectAll, selectOne, deselectOne, selected } = useSelection(rowIds);
-  const [user, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const router = useRouter();
 
   const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < rows.length;
   const selectedAll = rows.length > 0 && selected?.size === rows.length;
+
+  useEffect(() => {
+    if (onSelectionChange) {
+      onSelectionChange(selected);
+    }
+  }, [selected, onSelectionChange]);
 
   useEffect(() => {
     async function fetchEvent() {
@@ -78,9 +89,8 @@ export function EventsTable({
       }
 
       if (data) {
-        setEvent(data as Event);
+        // Обработка данных
       } else {
-        setEvent(null);
         setUploadError('Events data is invalid');
         router.push(paths.errors.notFound);
       }
@@ -110,12 +120,10 @@ export function EventsTable({
                   }}
                 />
               </TableCell>
-              <TableCell>ID</TableCell>
+              <TableCell>Организатор</TableCell>
               <TableCell>Название</TableCell>
               <TableCell>Описание</TableCell>
-              <TableCell>Начало</TableCell>
-              <TableCell>Конец</TableCell>
-              <TableCell>Имя</TableCell>
+              <TableCell>Количество подписавшихся</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -136,17 +144,14 @@ export function EventsTable({
                       }}
                     />
                   </TableCell>
-                  <TableCell>{row.id}</TableCell>
-                  <TableCell>{row.title}</TableCell>
-                  <TableCell>{row.description}</TableCell>
-                  <TableCell>{dayjs(row.start).format('MMM D, YYYY h:mm A')}</TableCell>
-                  <TableCell>{dayjs(row.end_time).format('MMM D, YYYY h:mm A')}</TableCell>
                   <TableCell>
                     <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
-                      {/* <Avatar src={row.user.avatar} />
-                      <Typography variant="subtitle2">{row.user.name}</Typography> */}
+                      <Avatar src={row.organizer.avatar} />
+                      <Typography variant="subtitle2">{row.organizer.firstName} {row.organizer.lastName}</Typography>
                     </Stack>
                   </TableCell>
+                  <TableCell>{row.title}</TableCell>
+                  <TableCell>{row.description}</TableCell>
                 </TableRow>
               );
             })}

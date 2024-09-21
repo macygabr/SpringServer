@@ -38,6 +38,7 @@ export function useSelection<T = string>(keys: T[] = []): Selection<T> {
     setSelected((prev) => {
       const copy = new Set(prev);
       copy.add(key);
+      console.log('Добавлено:', key, 'Текущий выбор:', copy);
       return copy;
     });
   }, []);

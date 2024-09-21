@@ -3,6 +3,7 @@
 import type { User } from '@/types/user';
 import axios from 'axios';
 import { Event } from '@/types/event';
+import { Tag, userTag } from '@/types/tags';
 
 const axiosInstance = axios.create({
   baseURL: 'http://37.194.168.90:2000',
@@ -38,7 +39,7 @@ class AuthClient {
     const { email, password, firstName, lastName } = params;
 
     try {
-      const response = await axiosInstance.post('auth/signup', { email, password, firstName, lastName },{
+      const response = await axiosInstance.post('auth/signup', { email, password, firstName, lastName, 
         headers: {
             Authorization: `${localStorage.getItem('custom-auth-token')}`
         }
@@ -121,12 +122,31 @@ class AuthClient {
     }
   }
 
+  async saveTags(tags: userTag): Promise<{ data?: any; error?: string }> {
+    console.log(tags);
+    try {
+      const response = await axiosInstance.post('account/tags', tags, {
+        headers: {
+          Authorization: `${localStorage.getItem('custom-auth-token')}`,
+        },
+      });
+      
+      return { data: response.data };
+    } catch (error) {
+      console.error('Error creating event:', error);
+      return { error: 'Failed to create event' };
+    }
+  }
+
+  //events/count (get)
+
   async getMyEvent(): Promise<{ data?: any; error?: string }> {
     try {
-        const response = await axiosInstance.get('events/getAll', {
-            headers: {
-                Authorization: `${localStorage.getItem('custom-auth-token')}`,
-            },
+      console.log(localStorage.getItem('custom-auth-token'));
+        const response = await axiosInstance.post('events/getall', null, {
+          headers: {
+            Authorization: `${localStorage.getItem('custom-auth-token')}`,
+          },
         });
 
         return { data: response.data };
@@ -136,21 +156,20 @@ class AuthClient {
     }
 }
 
-  async deleteEvent(event: { eventId: string }): Promise<{ data?: any; error?: string }> {
-    try {
-        const response = await axiosInstance.post('events/delete', event, {
-                headers: {
-                    Authorization: `${localStorage.getItem('custom-auth-token')}`,
-                },
-            }
-        );
+async deleteEvent(eventIds: { eventId: string[] }): Promise<{ data?: any; error?: string }> {
+  try {
+    const response = await axiosInstance.post('events/delete', eventIds, {
+      headers: {
+        Authorization: `${localStorage.getItem('custom-auth-token')}`,
+      },
+    });
 
-        return { data: response.data };
-    } catch (error) {
-        console.error('Error deleting event:', error);
-        return { error: 'Failed to delete event' };
-    }
+    return { data: response.data };
+  } catch (error) {
+    console.error('Error deleting events:', error);
+    return { error: 'Failed to delete events' };
   }
+}
 
   async uploadAvatar(file: File): Promise<{ error?: string; url?: string }> {
     const formData = new FormData();
@@ -170,6 +189,19 @@ class AuthClient {
     }
   }
 
+  async getCalendar(): Promise<{ data?: any; error?: string }> {
+    try{
+      const response = await axiosInstance.get('calendar/get', { 
+        headers: {
+          Authorization: `${localStorage.getItem('custom-auth-token')}`
+        }
+       });
+       return { data: response.data };
+    } catch (error) {
+      return { error: 'Error signing out' };
+    }
+  }
+
   async signOut(): Promise<{ error?: string }> {
     try{
       const response = await axiosInstance.get('account/logout', { 
@@ -186,7 +218,32 @@ class AuthClient {
   
   async signUpToken(check_token: string): Promise<{ error?: string }> {
     try{
-      const response = await axiosInstance.post('auth/confirm', check_token ,{
+      
+      const response = await axiosInstance.post('auth/confirm', { check_token } ,{
+        headers: {
+          Authorization: `${localStorage.getItem('custom-auth-token')}`
+        },
+      });
+      
+      const { token } = response.data;
+      const {token_name} = response.data;
+      console.log(token_name, token)
+      if (token && token_name) {
+        localStorage.setItem(token_name, token);
+      }
+      return {};
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        return { error: error.response?.data || 'An error occurred' };
+      }
+      return { error: 'An unknown error occurred' };
+    }
+  }
+
+  async subscribe(eventId: string): Promise<{ error?: string }> {
+    try{
+      console.log("eventId = " + eventId);
+      const response = await axiosInstance.post('events/subscribe', { eventId } ,{
         headers: {
           Authorization: `${localStorage.getItem('custom-auth-token')}`
         },

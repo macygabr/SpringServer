@@ -147,7 +147,7 @@ export function AccountDetailsForm(): React.JSX.Element {
         </CardContent>
         <Divider />
         <CardActions>
-          <Button variant="contained" type="submit">Сохранить</Button>
+          <Button variant="contained" type="submit" sx={{ backgroundColor: '#1b3a69', '&:hover': { backgroundColor: '#0f1e3c' } }}>Сохранить</Button>
         </CardActions>
       </Card>
     </form>

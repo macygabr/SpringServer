@@ -134,6 +134,7 @@ export function AccountInfo(): React.JSX.Element {
                 setUploadError('No file selected');
               }
             }}
+            sx={{ backgroundColor: '#1b3a69', '&:hover': { backgroundColor: '#0f1e3c' } }}
           >
             Загрузить Аватар
           </Button>
