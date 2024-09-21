@@ -14,9 +14,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.example.repositories.UserRepository;
+import org.example.repositories.*;
 import org.example.service.S3Service;
 import org.example.models.user.*;
+import org.example.models.tags.*;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.HashMap;
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/account")
@@ -24,12 +30,14 @@ public class AccountController implements HandlerInterceptor {
     private final UserRepository userRepository;
     private final AuthenticationService authenticationService;
     private final S3Service s3Service;
+    private final TagRepository tagRepository;
 
     @Autowired
-    public AccountController(UserRepository userRepository, S3Service s3Service) {
+    public AccountController(UserRepository userRepository, S3Service s3Service, TagRepository tagRepository) {
         this.userRepository = userRepository;
         this.authenticationService = new AuthenticationService(userRepository);
         this.s3Service = s3Service;
+        this.tagRepository = tagRepository;
     }
 
     @GetMapping("/getinfo")
@@ -88,6 +96,22 @@ public class AccountController implements HandlerInterceptor {
         ResponseEntity<?> response = ResponseEntity.ok(url);
         System.out.println("\033[34m savefile(response): " + response + "\033[0m");
         return response;
+    }
+
+    @PostMapping("/tags")
+    public ResponseEntity<?> tags(@RequestHeader("Authorization") String token, @RequestBody Map<String, List<String>> body) {
+        System.out.println("\033[33m tags(start): "+body+"\033[0m");
+        Optional<User> users = userRepository.findByToken(token);
+        User user = users.get();
+
+        List<String> tagsId = body.get("tagId");
+        List<Tag> tags = new LinkedList<>();
+        for(String tagId : tagsId) {
+            tags.add(tagRepository.findById(Long.parseLong(tagId)).get());
+        }
+        user.setTags(tags);
+        userRepository.save(user);
+        return ResponseEntity.ok().body("tags added");
     }
 
     @Override

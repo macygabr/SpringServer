@@ -17,5 +17,8 @@ public class Tag {
     @Column(nullable = false, unique = true)
     private String calendarURL;
 
+    @Column(unique = true)
+    private String src;
+
     private String name;
 }

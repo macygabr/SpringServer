@@ -81,4 +81,9 @@ public class GoogleCalendarService {
         Calendar service = getCalendarService();
         service.events().delete("primary", eventId).execute();
     }
+
+    public void updateEvent(String calendarId, String eventId, Event event) throws IOException, GeneralSecurityException {
+        Calendar service = getCalendarService();
+        service.events().update(calendarId, eventId, event).execute();
+    }
 }

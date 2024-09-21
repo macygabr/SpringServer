@@ -29,33 +29,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/events")
 public class EventsController {
-
-    @Value("${google.calendar.marketplace}")
-    private String marketplace;
-
-    @Value("${google.calendar.invest_club}")
-    private String investClub;
-
-    @Value("${google.calendar.sport_club}")
-    private String sportClub;
-
-    @Value("${google.calendar.reading_club}")
-    private String readingClub;
-
-    @Value("${google.calendar.charity}")
-    private String charity;
-
-    @Value("${google.calendar.english_club}")
-    private String englishClub;
-
-    @Value("${google.calendar.production}")
-    private String production;
-
-    @Value("${google.calendar.parent_council}")
-    private String parentCouncil;
-
-    private Map<String, String> calendarMap;
-
     private final GoogleCalendarService googleCalendarService;
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
@@ -71,31 +44,6 @@ public class EventsController {
         this.tagRepository = tagRepository;
     }
 
-    @PostConstruct
-    public void initCalendarMap() {
-        try {
-            calendarMap = new HashMap<>();
-            calendarMap.put("marketplace", marketplace);
-            calendarMap.put("investClub", investClub);
-            calendarMap.put("sportClub", sportClub);
-            calendarMap.put("readingClub", readingClub);
-            calendarMap.put("charity", charity);
-            calendarMap.put("englishClub", englishClub);
-            calendarMap.put("production", production);
-            calendarMap.put("parentCouncil", parentCouncil);
-
-            calendarMap.entrySet().stream()
-            .forEach(entry -> {
-                Tag tag = new Tag();
-                tag.setCalendarURL(entry.getValue());
-                tag.setName(entry.getKey());
-                tagRepository.save(tag);
-            });
-        } catch(Exception e) {
-            System.err.println(e.getMessage());
-        }
-    }
-
     @PostMapping("/create")
     public ResponseEntity<?> createEvent(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body) {
         try {
@@ -103,30 +51,45 @@ public class EventsController {
 
             Optional<User> users = userRepository.findByToken(token);
             if(!users.isPresent()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid tokens");
+            
+            String summary = body.get("title");
+            String description = body.get("description");
+            String location = body.get("location_address");
 
-            Event event = new Event()
-                .setSummary("Ваше событие")
-                .setLocation("Место")
-                .setDescription("Описание события");
+            String start_time = body.get("start") + ":00";
+            String end_time = body.get("end") +":00";
 
-            EventDateTime start = new EventDateTime()
-                .setDateTime(new DateTime("2024-09-20T13:00:00+07:00"))
-                .setTimeZone("Asia/Novosibirsk");
-            event.setStart(start);
+            Event event =  new Event()
+                    .setSummary(summary)
+                    .setLocation(location)
+                    .setDescription(description);
 
-            EventDateTime end = new EventDateTime()
-                .setDateTime(new DateTime("2024-09-20T14:00:00+07:00"))
-                .setTimeZone("Asia/Novosibirsk");
-            event.setEnd(end);
+                EventDateTime start = new EventDateTime()
+                    .setDateTime(new DateTime(start_time))
+                    .setTimeZone("Asia/Novosibirsk");
+                event.setStart(start);
 
-            String calendarId = calendarMap.get("marketplace");
-            String eventId  = googleCalendarService.createEvent(calendarId, event);
-            System.out.println("\033[32m events/create: " + "create event(eventId): "+eventId + " calendarId: " + calendarId+ "\033[0m");
+                EventDateTime end = new EventDateTime()
+                    .setDateTime(new DateTime(end_time))
+                    .setTimeZone("Asia/Novosibirsk");
+                event.setEnd(end);
 
-            Optional<Tag> tag = tagRepository.findByCalendarURL(calendarId);
+            Optional<Tag> tag = tagRepository.findById(Long.parseLong(body.get("tag")));
             if(!tag.isPresent()) return ResponseEntity.status(500).body("Error creating event");
 
+            String calendarURL = tag.get().getCalendarURL();
+            String eventId  = googleCalendarService.createEvent(calendarURL, event);
+            System.out.println("\033[32m events/create: " + "create event(eventId): "+eventId + " calendarURL: " + calendarURL+ "\033[0m");
+            String subscribeUrl = subscribeUrl(eventId, calendarURL);
+            String updatedDescription = event.getDescription() + "<a href=\"" +subscribeUrl+ "\">Подписаться на событие</a>";
+            event.setDescription(updatedDescription);
+            googleCalendarService.updateEvent(calendarURL, eventId, event);
+
+
             CustomEvent customEvent = new CustomEvent();
+            customEvent.setTitle(summary);
+            customEvent.setDescription(description);
+            customEvent.setLocation(location);
             customEvent.setEventId(eventId);
             customEvent.setTag(tag.get());
             customEvent.setOrganizer(users.get());
@@ -145,13 +108,14 @@ public class EventsController {
         }
     }
 
-
     @PostMapping("/delete")
-    public ResponseEntity<?> deleteEvent(@RequestBody Map<String, String> body) {
+    public ResponseEntity<?> deleteEvent(@RequestBody List<String> body) {
         try {
-            System.out.println("\033[33m events/delete: " + "start(body): "+body+ "\033[0m");
-            String eventId = body.get("eventId");
-            googleCalendarService.deleteEvent(eventId);
+            for(String eventId : body) {
+                // if()
+                System.out.println("\033[33m events/delete: " + "start(eventId): "+eventId+ "\033[0m");
+                googleCalendarService.deleteEvent(eventId);
+            }
             return ResponseEntity.ok("Event deleted");
         } catch (Exception e) {
             e.printStackTrace();
@@ -159,28 +123,88 @@ public class EventsController {
         }
     }
 
-    @GetMapping("/getAll")
-    public ResponseEntity<?> getAll(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body) {
+    @PostMapping("/getall")
+    public ResponseEntity<?> getAll(@RequestHeader("Authorization") String token) {
         try {
-            System.out.println("\033[33m events/getAll: " + "start(body): "+body+ "\033[0m");
-
+            System.out.println("\033[33m events/getAll: " + "start(token): "+token+ "\033[0m");
             Optional<User> users = userRepository.findByToken(token);
             if(!users.isPresent()) {
                 return ResponseEntity.status(401).body("Invalid token");
             }
-
             User user = users.get();
             List<EventSubscription> subscriptions = eventSubscriptionRepository.findAllByUser(user);
             
             List<CustomEvent> customEvents = subscriptions.stream()
                 .map(EventSubscription::getCustomEvent)
                 .collect(Collectors.toList());
-            
+            System.out.println("\033[33m events/getAll: " + "finish(customEvents): "+customEvents+ "\033[0m");
             return ResponseEntity.ok(customEvents);
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Error");
         }
+    }
+
+    @PostMapping("/subscribe")
+    public ResponseEntity<?> subscribe(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body) {
+        try {
+            System.out.println("\033[33m auth/subscribe: " + "start\033[0m");
+            String eventId = body.get("eventId");
+            synchronized (this) {
+                Optional<User> users = userRepository.findByToken(token);
+                if(!users.isPresent()) {
+                    return ResponseEntity.status(401).body("Invalid token");
+                }
+    
+                List<CustomEvent> events = users.get().getEvents();
+                System.out.println("\033[33m auth/subscribe: " + "finish(events): "+events+ "\033[0m");
+                for(CustomEvent event : events) {
+                    if(event.getEventId().equals(eventId)) {
+                        return ResponseEntity.status(400).body("Already subscribed");
+                    }
+                }
+    
+                EventSubscription eventSubscription = new EventSubscription();
+                eventSubscription.setUser(users.get());
+                eventSubscription.setCustomEvent(eventRepository.findByEventId(eventId).get());
+                eventSubscriptionRepository.save(eventSubscription);
+            }
+
+            System.out.println("\033[32m auth/subscribe: " + "finish(eventId): "+eventId+ "\033[0m");
+            return ResponseEntity.ok("Event subscribed");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error");
+        }
+    }
+
+    private Event parseEvent(Map<String, String> body) {
+        String summary = body.get("title");
+        String description = body.get("description");
+        String location = body.get("location_address");
+
+        String start_time = body.get("start") + ":00";
+        String end_time = body.get("end") +":00";
+
+        Event event =  new Event()
+                .setSummary(summary)
+                .setLocation(location)
+                .setDescription(description);
+
+            EventDateTime start = new EventDateTime()
+                .setDateTime(new DateTime(start_time))
+                .setTimeZone("Asia/Novosibirsk");
+            event.setStart(start);
+
+            EventDateTime end = new EventDateTime()
+                .setDateTime(new DateTime(end_time))
+                .setTimeZone("Asia/Novosibirsk");
+            event.setEnd(end);
+
+        return event;
+    }
+    private String subscribeUrl(String eventId, String calendarURL) {
+        return "http://37.194.168.90:3000/auth/subscribe?eventId=" + eventId;
     }
 }

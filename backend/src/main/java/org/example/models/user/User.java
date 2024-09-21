@@ -11,7 +11,7 @@ import java.util.List;
 
 
 @Data
-@ToString
+@ToString(exclude = "events")
 @Entity
 @Table(name = "users")
 public class User {
@@ -39,6 +39,13 @@ public class User {
                joinColumns = @JoinColumn(name = "user_id"),
                inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private List<Tag> tags;
+
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(name = "event_subscriptions",
+               joinColumns = @JoinColumn(name = "user_id"),
+               inverseJoinColumns = @JoinColumn(name = "event_id"))
+    private List<CustomEvent> events;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

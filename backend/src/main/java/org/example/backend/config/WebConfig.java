@@ -24,6 +24,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(accountInterceptor)
                 .addPathPatterns("/events/**")
+                .addPathPatterns("/calendar/**")
                 .addPathPatterns("/account/**");
     }
 }

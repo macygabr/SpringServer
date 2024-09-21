@@ -34,7 +34,7 @@ public class AuthenticationService {
         }
         System.out.println("\033[30m AuthenticationService(status): search user...\033[0m");
         Optional<User> user = userRepository.findByToken(token);
-        System.out.println("\033[30m AuthenticationService(status): succses\033[0m");
+        if(user.isPresent()) System.out.println("\033[30m AuthenticationService(status): succses\033[0m");
         
         return user.isPresent();
     }

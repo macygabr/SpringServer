@@ -19,10 +19,6 @@ public class CustomEvent {
     private String title;
     private String description;
 
-    private LocalDateTime start;
-    @Column(name = "end_time")
-    private LocalDateTime end;
-
     @Column(nullable = false, unique = true)
     private String eventId;
 
@@ -33,4 +29,6 @@ public class CustomEvent {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User organizer;
+
+    private String location;
 }

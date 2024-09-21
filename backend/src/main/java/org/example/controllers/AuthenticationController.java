@@ -71,11 +71,13 @@ public class AuthenticationController {
     }
 
     @PostMapping("/confirm")
-    public ResponseEntity<?> confirmEmail(@RequestBody Map<String, String> body) {
-        String token = body.get("token");
+    public ResponseEntity<?> confirmEmail(@RequestBody Map<String, String> token_map) {
+        String token = token_map.get("check_token");
+        System.out.println("\033[34mconfirm(token_map): " + token_map + "\033[0m");
         System.out.println("\033[34mconfirm(token): " + token + "\033[0m");
+        System.out.println("\033[34mconfirm(token): " + emailService.getToken() + "\033[0m");
         if(!token.equals(emailService.getToken())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+            return ResponseEntity.ok().body("Invalid token");
         }
 
         emailService.setToken(null);

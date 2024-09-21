@@ -13,4 +13,6 @@ import java.util.List;
 
 public interface TagRepository extends JpaRepository<Tag, Long> {
     Optional<Tag> findByCalendarURL(String calendarURL);
+    Optional<Tag> findByName(String name);
+    Optional<Tag> findById(Long id);
 }
