@@ -98,7 +98,6 @@ export function EventsTable({
               <TableCell>Организатор</TableCell>
               <TableCell>Название</TableCell>
               <TableCell>Описание</TableCell>
-              <TableCell>Количество подписавшихся</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
