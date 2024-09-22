@@ -6,6 +6,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.context.annotation.Scope;
 import java.util.UUID;
+import org.example.models.user.*;
+import org.example.models.tags.*;
 import lombok.Data;
 
 @Data
@@ -21,6 +23,15 @@ public class EmailService {
 
     @Autowired
     private JavaMailSender mailSender;
+
+    public void sendNotification(Tag tag, User user) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(user.getEmail());
+        message.setSubject(tag.getName());
+        message.setText("test");
+        message.setFrom(getFromEmail());
+        mailSender.send(message);
+    }
 
     public void sendConfirmationEmail() {
         token = generateToken();

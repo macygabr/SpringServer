@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.example.service.EmailService;
 
 import org.example.models.events.*;
 import org.example.models.subscriptions.*;
@@ -34,14 +35,16 @@ public class EventsController {
     private final UserRepository userRepository;
     private final EventSubscriptionRepository eventSubscriptionRepository;
     private final TagRepository tagRepository;
+    private final EmailService emailService;
 
     @Autowired
-    public EventsController(GoogleCalendarService googleCalendarService, EventRepository eventRepository, UserRepository userRepository, EventSubscriptionRepository eventSubscriptionRepository, TagRepository tagRepository) {
+    public EventsController(GoogleCalendarService googleCalendarService, EventRepository eventRepository, UserRepository userRepository, EventSubscriptionRepository eventSubscriptionRepository, TagRepository tagRepository, EmailService emailService) {
         this.googleCalendarService = googleCalendarService;
         this.eventSubscriptionRepository = eventSubscriptionRepository;
         this.eventRepository=eventRepository;
         this.userRepository=userRepository;
         this.tagRepository = tagRepository;
+        this.emailService = emailService;
     }
 
     @PostMapping("/create")
@@ -100,6 +103,7 @@ public class EventsController {
             eventSubscription.setUser(users.get());
             eventSubscriptionRepository.save(eventSubscription);
 
+            SentMessage(tag.get());
             return ResponseEntity.ok("Event created");
         } catch (Exception e) {
             e.printStackTrace();
@@ -109,13 +113,8 @@ public class EventsController {
     }
 
     @PostMapping("/delete")
-    public ResponseEntity<?> deleteEvent(@RequestBody List<String> body) {
+    public ResponseEntity<?> deleteEvent(@RequestHeader("Authorization") String token, @RequestBody Map<String, String> body) {
         try {
-            for(String eventId : body) {
-                // if()
-                System.out.println("\033[33m events/delete: " + "start(eventId): "+eventId+ "\033[0m");
-                googleCalendarService.deleteEvent(eventId);
-            }
             return ResponseEntity.ok("Event deleted");
         } catch (Exception e) {
             e.printStackTrace();
@@ -156,7 +155,7 @@ public class EventsController {
                 if(!users.isPresent()) {
                     return ResponseEntity.status(401).body("Invalid token");
                 }
-    
+
                 List<CustomEvent> events = users.get().getEvents();
                 System.out.println("\033[33m auth/subscribe: " + "finish(events): "+events+ "\033[0m");
                 for(CustomEvent event : events) {
@@ -164,7 +163,7 @@ public class EventsController {
                         return ResponseEntity.status(400).body("Already subscribed");
                     }
                 }
-    
+
                 EventSubscription eventSubscription = new EventSubscription();
                 eventSubscription.setUser(users.get());
                 eventSubscription.setCustomEvent(eventRepository.findByEventId(eventId).get());
@@ -176,6 +175,19 @@ public class EventsController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Error");
+        }
+    }
+
+    private void SentMessage(Tag tag) {
+        try {
+            userRepository.findAll().forEach(user -> {
+                if (user.getTags().contains(tag)) {
+                    emailService.sendNotification(tag, user);
+                    System.out.println("\033[32m sendMessage: " + "finish(events): "+user.getEvents()+ "\033[0m");
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
