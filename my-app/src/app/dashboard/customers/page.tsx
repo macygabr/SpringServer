@@ -79,23 +79,22 @@ export default function Page(): React.JSX.Element {
   };
 
   const handleDeleteClick = async () => {
-    const selectedIds = Array.from(currentSelection); // Получаем выбранные id
+    const selectedIds = Array.from(currentSelection); 
   
     // Получаем соответствующие eventId
     const selectedEventIds: string[] = selectedIds
       .map(selectedId => {
         const event = events.find(e => e.id === selectedId);
-        return event ? event.eventId : null; // Возвращаем eventId или null, если не найдено
+        return event ? event.eventId : null; 
       })
-      .filter((eventId): eventId is string => eventId !== null); // Убираем null значения и указываем, что остаются только строки
+      .filter((eventId): eventId is string => eventId !== null);
   
     if (selectedEventIds.length > 0) {
-      // Отправляем массив строк с eventId
       const { data, error } = await authClient.deleteEvent(selectedEventIds); 
       if (error) {
         console.error('Ошибка при удалении событий:', error);
       } else {
-        setEvents(prevEvents => prevEvents.filter(event => !selectedEventIds.includes(event.eventId))); // Фильтруем по eventId
+        setEvents(prevEvents => prevEvents.filter(event => !selectedEventIds.includes(event.eventId))); 
         console.log('События успешно удалены:', data);
       }
     } else {
